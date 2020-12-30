@@ -4,9 +4,9 @@ enum TriviaKind {
 }
 
 class Trivia {
-    startPosition: number;
-    endPosition: number;
-    kind: TriviaKind;
+    private startPosition: number;
+    private endPosition: number;
+    private kind: TriviaKind;
 
     constructor(startPos: number, endPos: number, kind: TriviaKind) {
         this.startPosition = startPos;
@@ -30,10 +30,10 @@ enum TokenKind {
 };
 
 class Token {
-    startPosition: number;
-    endPosition: number;
-    kind: TokenKind;
-    trivias: Trivia[];
+    private startPosition: number;
+    private endPosition: number;
+    private kind: TokenKind;
+    private trivias: Trivia[];
 
     constructor(startPos: number, endPos: number, kind: TokenKind, trivias: Trivia[]) {
         this.startPosition = startPos;
@@ -44,7 +44,7 @@ class Token {
 };
 
 class NameLiteral extends Token {
-    name: string;
+    private name: string;
 
     constructor(startPos: number, endPos: number, trivias: Trivia[], name: string) {
         super(startPos, endPos, TokenKind.Name, trivias);
@@ -53,7 +53,7 @@ class NameLiteral extends Token {
 };
 
 class NumberLiteral extends Token {
-    literal: string;
+    private literal: string;
 
     constructor(startPos: number, endPos: number, trivias: Trivia[], literal: string) {
         super(startPos, endPos, TokenKind.Number, trivias);
@@ -62,7 +62,7 @@ class NumberLiteral extends Token {
 };
 
 class StringLiteral extends Token {
-    literal: string;
+    private literal: string;
 
     constructor(startPos: number, endPos: number, trivias: Trivia[], literal: string) {
         super(startPos, endPos, TokenKind.String, trivias);
