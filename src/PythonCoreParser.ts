@@ -1,4 +1,20 @@
 
+enum TriviaKind {
+    Empty, WhiteSpace, NewLine, LineContinuation, Comment
+}
+
+class Trivia {
+    startPosition: number;
+    endPosition: number;
+    kind: TriviaKind;
+
+    constructor(startPos: number, endPos: number, kind: TriviaKind) {
+        this.startPosition = startPos;
+        this.endPosition = endPos;
+        this.kind = kind;
+    }
+};
+
 enum TokenKind {
     Empty, EOF, Newline, Indent, Dedent, PY_False, Py_None, Py_True, Py_And, Py_As, Py_Assert, 
     Py_Async, Py_Await, Py_Break, Py_Class, Py_Continue, Py_Def, PyDel, Py_Elif, Py_Else, Py_Except, 
@@ -17,10 +33,48 @@ class Token {
     startPosition: number;
     endPosition: number;
     kind: TokenKind;
+    trivias: Trivia[];
 
-    constructor(startPos: number, endPos: number, kind: TokenKind) {
+    constructor(startPos: number, endPos: number, kind: TokenKind, trivias: Trivia[]) {
         this.startPosition = startPos;
         this.endPosition = endPos;
         this.kind = kind;
+        this.trivias = trivias;
     }
-}
+};
+
+class NameLiteral extends Token {
+    name: string;
+
+    constructor(startPos: number, endPos: number, trivias: Trivia[], name: string) {
+        super(startPos, endPos, TokenKind.Name, trivias);
+        this.name = name;
+    }
+};
+
+class NumberLiteral extends Token {
+    literal: string;
+
+    constructor(startPos: number, endPos: number, trivias: Trivia[], literal: string) {
+        super(startPos, endPos, TokenKind.Number, trivias);
+        this.literal = literal;
+    }
+};
+
+class StringLiteral extends Token {
+    literal: string;
+
+    constructor(startPos: number, endPos: number, trivias: Trivia[], literal: string) {
+        super(startPos, endPos, TokenKind.String, trivias);
+        this.literal = literal;
+    }
+};
+
+class TypeComment extends Token {
+    comment: string;
+
+    constructor(startPos: number, endPos: number, trivias: Trivia[], comment: string) {
+        super(startPos, endPos, TokenKind.TypeComment, trivias);
+        this.comment = comment;
+    }
+};
