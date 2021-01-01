@@ -13,7 +13,7 @@ class Trivia {
         this.endPosition = endPos;
         this.kind = kind;
     }
-};
+}
 
 enum TokenKind {
     Empty, EOF, Newline, Indent, Dedent, Py_False, Py_None, Py_True, Py_And, Py_As, Py_Assert, 
@@ -27,7 +27,7 @@ enum TokenKind {
     Py_MinusAssign, Py_MulAssign, Py_PowerAssign, Py_DivAssign, Py_FloorDivAssign, Py_ModuloAssign, 
     Py_MatriceAssign, Py_BitAndAssign, Py_BitOrAssign, Py_BitXorAssign, Py_ShiftLeftAssign, Py_ShiftRightAssign, 
     Name, Number, String, TypeComment
-};
+}
 
 class Token {
     private startPosition: number;
@@ -53,7 +53,7 @@ class Token {
     getKind() : TokenKind {
         return this.kind;
     }
-};
+}
 
 class NameLiteral extends Token {
     private name: string;
@@ -62,7 +62,7 @@ class NameLiteral extends Token {
         super(startPos, endPos, TokenKind.Name, trivias);
         this.name = name;
     }
-};
+}
 
 class NumberLiteral extends Token {
     private literal: string;
@@ -71,7 +71,7 @@ class NumberLiteral extends Token {
         super(startPos, endPos, TokenKind.Number, trivias);
         this.literal = literal;
     }
-};
+}
 
 class StringLiteral extends Token {
     private literal: string;
@@ -80,16 +80,18 @@ class StringLiteral extends Token {
         super(startPos, endPos, TokenKind.String, trivias);
         this.literal = literal;
     }
-};
+}
 
 class TypeComment extends Token {
-    comment: string;
+    private comment: string;
 
     constructor(startPos: number, endPos: number, trivias: Trivia[], comment: string) {
         super(startPos, endPos, TokenKind.TypeComment, trivias);
         this.comment = comment;
     }
-};
+}
+
+
 
 
 
@@ -103,11 +105,11 @@ class ASTNode {
     private startPosition: number;
     private endPosition: number;
 
-    constructor(startPos: number = -1, endPos: number = -1) {
+    constructor(startPos = -1, endPos = -1) {
         this.startPosition = startPos;
         this.endPosition = endPos;
     }
-};
+}
 
 class ASTAtomNoneNode extends ASTNode {
     private Operator1: Token;
@@ -172,6 +174,19 @@ class ASTAtomStringNode extends ASTNode {
     }
 }
 
+class ASTTupleLiteral extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode, op2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -183,52 +198,60 @@ class PythonCoreParser {
     private curSymbol: Token;
 
     constructor() {
-        this.curSymbol = new Token(-1, -1, TokenKind.Empty, [])
+        this.curSymbol = new Token(-1, -1, TokenKind.Empty, []);
     }
 
     advance() {
-
+        
     }
 
 
     parseAtom() : ASTNode {
-        let startPos = this.curSymbol.getStartPosition();
+        const startPos = this.curSymbol.getStartPosition();
+        const op1 = this.curSymbol;
         switch (this.curSymbol.getKind())
         {
             case TokenKind.Py_None:
-                let op1 = this.curSymbol;
                 this.advance();
                 return new ASTAtomNoneNode(startPos, this.curSymbol.getStartPosition(), op1);
             case TokenKind.Py_False:
-                let op2 = this.curSymbol;
                 this.advance();
-                return new ASTAtomFalseNode(startPos, this.curSymbol.getStartPosition(), op2);
+                return new ASTAtomFalseNode(startPos, this.curSymbol.getStartPosition(), op1);
             case TokenKind.Py_True:
-                let op3 = this.curSymbol;
                 this.advance();
-                return new ASTAtomTrueNode(startPos, this.curSymbol.getStartPosition(), op3);
+                return new ASTAtomTrueNode(startPos, this.curSymbol.getStartPosition(), op1);
             case TokenKind.Py_Elipsis:
-                let op4 = this.curSymbol;
                 this.advance();
-                return new ASTAtomElipsisNode(startPos, this.curSymbol.getStartPosition(), op4);
+                return new ASTAtomElipsisNode(startPos, this.curSymbol.getStartPosition(), op1);
             case TokenKind.Name:
-                let op5 = this.curSymbol;
                 this.advance();
-                return new ASTAtomNameNode(startPos, this.curSymbol.getStartPosition(), op5);
+                return new ASTAtomNameNode(startPos, this.curSymbol.getStartPosition(), op1);
             case TokenKind.Number:
-                let op6 = this.curSymbol;
                 this.advance();
-                return new ASTAtomNumberNode(startPos, this.curSymbol.getStartPosition(), op6);
-            case TokenKind.String:
-                let nodes : StringLiteral[] = []
+                return new ASTAtomNumberNode(startPos, this.curSymbol.getStartPosition(), op1);
+            case TokenKind.String: {
+                const nodes : StringLiteral[] = [];
                 nodes.push(<StringLiteral>this.curSymbol);
                 this.advance();
                 while (this.curSymbol.getKind() == TokenKind.String) {
                     nodes.push(<StringLiteral>this.curSymbol);
                     this.advance();
                 }
-                return new ASTAtomStringNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse())
+                return new ASTAtomStringNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse());
+            }
+            case TokenKind.Py_LeftParen: {
+                this.advance();
+                if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
+                    const op2 = this.curSymbol;
+                    this.advance();
+                    return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, null, op2);
+                }
+                return new ASTNode(); // Fix!
+            }
 
+            case TokenKind.Py_LeftBracket:
+            case TokenKind.Py_LeftCurly:
+                break;
         }
 
         return new ASTNode();
@@ -237,4 +260,4 @@ class PythonCoreParser {
     parseAtomExpr() : ASTNode {
         return new ASTNode();
     }
-};
+}
