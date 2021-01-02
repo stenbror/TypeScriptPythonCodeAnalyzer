@@ -1,4 +1,17 @@
 
+class SyntaxErrorException extends Error {
+    private Position: number;
+    private ErrorToken: Token;
+
+    constructor(pos: number, text: string, token: Token) {
+        super(text);
+        this.Position = pos;
+        this.ErrorToken = token;
+        Object.setPrototypeOf(this, SyntaxErrorException.prototype);
+    }
+}
+
+
 enum TriviaKind {
     Empty, WhiteSpace, NewLine, LineContinuation, Comment
 }
@@ -187,6 +200,32 @@ class ASTTupleLiteral extends ASTNode {
     }
 }
 
+class ASTListLiteral extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode, op2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Right = right;
+    }
+}
+
+class ASTDicitionaryLiteral extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode, op2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -244,17 +283,72 @@ class PythonCoreParser {
                 if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
                     const op2 = this.curSymbol;
                     this.advance();
-                    return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, null, op2);
+                    return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
                 }
-                return new ASTNode(); // Fix!
+                else if (this.curSymbol.getKind() == TokenKind.Py_Yield) {
+                    const right = new ASTNode(); // yieldExpr
+                    if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
+                        const op2 = this.curSymbol;
+                        this.advance();
+                        return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                    }
+                    else {
+                        throw new SyntaxErrorException(startPos, "Missing ')' in tuple literal!", this.curSymbol);
+                    }
+                }
+                else {
+                    const right = new ASTNode(); // testlist_comp
+                    if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
+                        const op2 = this.curSymbol;
+                        this.advance();
+                        return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                    }
+                    else {
+                        throw new SyntaxErrorException(startPos, "Missing ')' in tuple literal!", this.curSymbol);
+                    }
+                }
             }
-
-            case TokenKind.Py_LeftBracket:
-            case TokenKind.Py_LeftCurly:
-                break;
+            case TokenKind.Py_LeftBracket: {
+                this.advance();
+                if (this.curSymbol.getKind() == TokenKind.Py_RightBracket) {
+                    const op2 = this.curSymbol;
+                    this.advance();
+                    return new ASTListLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
+                }
+                else {
+                    const right = new ASTNode(); // testlist_comp
+                    if (this.curSymbol.getKind() == TokenKind.Py_RightBracket) {
+                        const op2 = this.curSymbol;
+                        this.advance();
+                        return new ASTListLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                    }
+                    else {
+                        throw new SyntaxErrorException(startPos, "Missing ']' in tuple literal!", this.curSymbol);
+                    }
+                }
+            }
+            case TokenKind.Py_LeftCurly: {
+                this.advance();
+                if (this.curSymbol.getKind() == TokenKind.Py_RightCurly) {
+                    const op2 = this.curSymbol;
+                    this.advance();
+                    return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
+                }
+                else {
+                    const right = new ASTNode(); // testlist_comp
+                    if (this.curSymbol.getKind() == TokenKind.Py_RightCurly) {
+                        const op2 = this.curSymbol;
+                        this.advance();
+                        return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                    }
+                    else {
+                        throw new SyntaxErrorException(startPos, "Missing '}' in tuple literal!", this.curSymbol);
+                    }
+                }
+            }
+            default :
+                throw new SyntaxErrorException(startPos, "Illegal literal!", this.curSymbol);
         }
-
-        return new ASTNode();
     }
 
     parseAtomExpr() : ASTNode {
