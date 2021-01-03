@@ -951,6 +951,11 @@ class PythonCoreParser {
                     res = new ASTNotEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
+                case TokenKind.Py_In: {
+                    const right = this.parseOrExpr();
+                    res = new ASTInExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
                 case TokenKind.Py_Is: {
                     if (this.curSymbol.getKind() === TokenKind.Py_Not) {
                         const op2 = this.curSymbol;
@@ -990,5 +995,29 @@ class PythonCoreParser {
             return new ASTNotTest(startPos, this.curSymbol.getStartPosition(), op1, right);
         }
         return this.parseComparisonExpr();
+    }
+
+    parseAndTest() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseNotTest();
+        while (this.curSymbol.getKind() === TokenKind.Py_And) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseNotTest();
+            res = new ASTAndTest(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+        }
+        return res;
+    }
+
+    parseOrTest() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseAndTest();
+        while (this.curSymbol.getKind() === TokenKind.Py_Or) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseAndTest();
+            res = new ASTOrTest(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+        }
+        return res;
     }
 }
