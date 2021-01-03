@@ -239,6 +239,19 @@ class ASTAtomExpr extends ASTNode {
     }
 }
 
+class ASTPowerExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -285,7 +298,7 @@ class PythonCoreParser {
                 const nodes : StringLiteral[] = [];
                 nodes.push(<StringLiteral>this.curSymbol);
                 this.advance();
-                while (this.curSymbol.getKind() == TokenKind.String) {
+                while (this.curSymbol.getKind() === TokenKind.String) {
                     nodes.push(<StringLiteral>this.curSymbol);
                     this.advance();
                 }
@@ -293,14 +306,14 @@ class PythonCoreParser {
             }
             case TokenKind.Py_LeftParen: {
                 this.advance();
-                if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
+                if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
                     const op2 = this.curSymbol;
                     this.advance();
                     return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
                 }
-                else if (this.curSymbol.getKind() == TokenKind.Py_Yield) {
+                else if (this.curSymbol.getKind() === TokenKind.Py_Yield) {
                     const right = new ASTNode(); // yieldExpr
-                    if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
+                    if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
                         const op2 = this.curSymbol;
                         this.advance();
                         return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
@@ -311,7 +324,7 @@ class PythonCoreParser {
                 }
                 else {
                     const right = new ASTNode(); // testlist_comp
-                    if (this.curSymbol.getKind() == TokenKind.Py_RightParen) {
+                    if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
                         const op2 = this.curSymbol;
                         this.advance();
                         return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
@@ -323,14 +336,14 @@ class PythonCoreParser {
             }
             case TokenKind.Py_LeftBracket: {
                 this.advance();
-                if (this.curSymbol.getKind() == TokenKind.Py_RightBracket) {
+                if (this.curSymbol.getKind() === TokenKind.Py_RightBracket) {
                     const op2 = this.curSymbol;
                     this.advance();
                     return new ASTListLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
                 }
                 else {
                     const right = new ASTNode(); // testlist_comp
-                    if (this.curSymbol.getKind() == TokenKind.Py_RightBracket) {
+                    if (this.curSymbol.getKind() === TokenKind.Py_RightBracket) {
                         const op2 = this.curSymbol;
                         this.advance();
                         return new ASTListLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
@@ -342,14 +355,14 @@ class PythonCoreParser {
             }
             case TokenKind.Py_LeftCurly: {
                 this.advance();
-                if (this.curSymbol.getKind() == TokenKind.Py_RightCurly) {
+                if (this.curSymbol.getKind() === TokenKind.Py_RightCurly) {
                     const op2 = this.curSymbol;
                     this.advance();
                     return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
                 }
                 else {
                     const right = new ASTNode(); // testlist_comp
-                    if (this.curSymbol.getKind() == TokenKind.Py_RightCurly) {
+                    if (this.curSymbol.getKind() === TokenKind.Py_RightCurly) {
                         const op2 = this.curSymbol;
                         this.advance();
                         return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
@@ -366,7 +379,7 @@ class PythonCoreParser {
 
     parseAtomExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
-        if (this.curSymbol.getKind() == TokenKind.Py_Async)
+        if (this.curSymbol.getKind() === TokenKind.Py_Async)
         {
             const op1 = this.curSymbol;
             this.advance();
@@ -385,5 +398,22 @@ class PythonCoreParser {
             nodes.push( new ASTNode() ); // parseTrailer
         }
         return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes.reverse());
+    }
+
+    parsePower() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        const left = this.parseAtomExpr();
+        if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseFactor();
+            return new ASTPowerExpr(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+        }
+        return left;
+    }
+
+
+    parseFactor() : ASTNode {
+        return new ASTNode();
     }
 }
