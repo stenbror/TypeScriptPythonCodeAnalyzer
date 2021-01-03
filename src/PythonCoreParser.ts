@@ -31,7 +31,7 @@ class Trivia {
 enum TokenKind {
     Empty, EOF, Newline, Indent, Dedent, Py_False, Py_None, Py_True, Py_And, Py_As, Py_Assert, 
     Py_Async, Py_Await, Py_Break, Py_Class, Py_Continue, Py_Def, PyDel, Py_Elif, Py_Else, Py_Except, 
-    Py_Finally, Py_For, Py_From, Py_Global, PyIf, Py_Import, Py_In, Py_Is, Py_Lambda, Py_Nonlocal,
+    Py_Finally, Py_For, Py_From, Py_Global, Py_If, Py_Import, Py_In, Py_Is, Py_Lambda, Py_Nonlocal,
     Py_Not, Py_Or, Py_Pass, Py_Raise, Py_Return, Py_Try, Py_While, Py_With, Py_Yield, Py_Plus, Py_Minus, 
     Py_Mul, Py_Power, Py_Div, Py_FloorDiv, Py_Modulo, Py_Matrice, Py_ShiftLeft, Py_ShiftRight, Py_BitAnd,
     Py_BitOr, Py_BitXor, Py_BitInvert, Py_Less, Py_Greater, Py_LessEqual, Py_GreaterEqual, Py_Equal, 
@@ -623,6 +623,51 @@ class ASTOrTest extends ASTNode {
     }
 }
 
+class ASTLambdaExpr extends ASTNode {
+    private Operator1: Token;
+    private Left : ASTNode;
+    private Operator2: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator1: Token, left: ASTNode, operator2: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Left = left;
+        this.Operator2 = operator2;
+        this.Right = right;
+    }
+}
+
+class ASTTestExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator1: Token;
+    private Right : ASTNode;
+    private Operator2: Token;
+    private Next: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator1: Token, right: ASTNode, operator2: Token, next: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator1 = operator1;
+        this.Right = right;
+        this.Operator2 = operator2;
+        this.Next = next;
+    }
+}
+
+class ASTNamedExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1019,5 +1064,64 @@ class PythonCoreParser {
             res = new ASTOrTest(startPos, this.curSymbol.getStartPosition(), res, op1, right);
         }
         return res;
+    }
+
+    parseLambdaExpr(isCond: boolean) : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Lambda) {
+            let left = new ASTNode();
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() != TokenKind.Py_Colon) {
+                left = new ASTNode(); // this.parseVarArgsList();
+            }
+            if (this.curSymbol.getKind() != TokenKind.Py_Colon) {
+                throw new SyntaxErrorException(startPos, "Missing ':' in 'lambda' expression!", this.curSymbol);
+            }
+            const op2 = this.curSymbol;
+            this.advance();
+            if (isCond) {
+                const right = this.parseTest();
+                return new ASTLambdaExpr(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
+            }
+            else {
+                const right = this.parseTestNoCond();
+                return new ASTLambdaExpr(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
+            }
+
+        }
+        throw new SyntaxErrorException(startPos, "Missing 'lambda' keyword in 'lambda' expression!", this.curSymbol);
+    }
+
+    parseTestNoCond() : ASTNode {
+        if (this.curSymbol.getKind() === TokenKind.Py_Lambda) {
+            return this.parseLambdaExpr(false);
+        }
+        return this.parseOrTest();
+    }
+
+    parseTest() : ASTNode {
+        if (this.curSymbol.getKind() === TokenKind.Py_Lambda) {
+            return this.parseLambdaExpr(true);
+        }
+        const startPos = this.curSymbol.getStartPosition();
+        const left = this.parseOrTest();
+        if (this.curSymbol.getKind() === TokenKind.Py_If) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseOrTest();
+            if (this.curSymbol.getKind() != TokenKind.Py_Else) {
+                throw new SyntaxErrorException(startPos, "Missing 'else' keyword in test expression!", this.curSymbol);
+            }
+            const op2 = this.curSymbol;
+            this.advance();
+            const next = this.parseTest();
+            return new ASTTestExpr(startPos, this.curSymbol.getStartPosition(), left, op1, right, op2, next);
+        }
+        return left;
+    }
+
+    parseNamedExpr() : ASTNode {
+        return new ASTNode();
     }
 }
