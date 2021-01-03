@@ -402,6 +402,45 @@ class ASTShiftRightExpr extends ASTNode {
     }
 }
 
+class ASTBitAndExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTBitXorExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTBitOrExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -642,6 +681,42 @@ class PythonCoreParser {
                     res = new ASTShiftRightExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
             }
+        }
+        return res;
+    }
+
+    parseAndExpr() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseShiftExpr();
+        while (this.curSymbol.getKind() === TokenKind.Py_BitAnd) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseShiftExpr();
+            res = new ASTBitAndExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+        }
+        return res;
+    }
+
+    parseXorExpr() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseAndExpr();
+        while (this.curSymbol.getKind() === TokenKind.Py_BitXor) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseAndExpr();
+            res = new ASTBitXorExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+        }
+        return res;
+    }
+
+    parseOrExpr() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseXorExpr();
+        while (this.curSymbol.getKind() === TokenKind.Py_BitOr) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseXorExpr();
+            res = new ASTBitOrExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
         }
         return res;
     }
