@@ -285,6 +285,71 @@ class ASTUnaryBitInvert extends ASTNode {
     }
 }
 
+class ASTMulExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTDivExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTFloorDivExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTModuloExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTMatriceExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -461,5 +526,46 @@ class PythonCoreParser {
             default:
                 return this.parsePower();
         }
+    }
+
+    parseTerm() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseFactor();
+        while (this.curSymbol.getKind() in [ TokenKind.Py_Mul, TokenKind.Py_Div, TokenKind.Py_FloorDiv, TokenKind.Py_Modulo, TokenKind.Py_Matrice ]) {
+            const op1 = this.curSymbol;
+            switch (op1.getKind()) {
+                case TokenKind.Py_Mul: {
+                    this.advance();
+                    const right = this.parseFactor();
+                    res = new ASTMulExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                }
+                break;
+                case TokenKind.Py_Div: {
+                    this.advance();
+                    const right = this.parseFactor();
+                    res = new ASTDivExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                }
+                break;
+                case TokenKind.Py_FloorDiv: {
+                    this.advance();
+                    const right = this.parseFactor();
+                    res = new ASTFloorDivExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                }
+                break;
+                case TokenKind.Py_Modulo: {
+                    this.advance();
+                    const right = this.parseFactor();
+                    res = new ASTModuloExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                }
+                break;
+                case TokenKind.Py_Matrice: {
+                    this.advance();
+                    const right = this.parseFactor();
+                    res = new ASTMatriceExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                }
+                break;
+            }
+        }
+        return res;
     }
 }
