@@ -32,7 +32,7 @@ enum TokenKind {
     Empty, EOF, Newline, Indent, Dedent, Py_False, Py_None, Py_True, Py_And, Py_As, Py_Assert, 
     Py_Async, Py_Await, Py_Break, Py_Class, Py_Continue, Py_Def, PyDel, Py_Elif, Py_Else, Py_Except, 
     Py_Finally, Py_For, Py_From, Py_Global, PyIf, Py_Import, Py_In, Py_Is, Py_Lambda, Py_Nonlocal,
-    Py_Not, Py_Or, Py_Pass, Py_Raise, Py_Return, Py_Try, Py_While, Py_With, Py_Yield, PyPlus, Py_Minus, 
+    Py_Not, Py_Or, Py_Pass, Py_Raise, Py_Return, Py_Try, Py_While, Py_With, Py_Yield, Py_Plus, Py_Minus, 
     Py_Mul, Py_Power, Py_Div, Py_FloorDiv, Py_Modulo, Py_Matrice, Py_ShiftLeft, Py_ShiftRight, Py_BitAnd,
     Py_BitOr, Py_BitXor, Py_BitInvert, Py_Less, Py_Greater, Py_LessEqual, Py_GreaterEqual, Py_Equal, 
     Py_NotEqual, Py_LeftParen, Py_RightParen, Py_LeftBracket, Py_RightBracket, Py_LeftCurly, Py_RightCurly, 
@@ -252,6 +252,39 @@ class ASTPowerExpr extends ASTNode {
     }
 }
 
+class ASTUnaryPlus extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTUnaryMinus extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTUnaryBitInvert extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -379,22 +412,19 @@ class PythonCoreParser {
 
     parseAtomExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
-        if (this.curSymbol.getKind() === TokenKind.Py_Async)
-        {
+        if (this.curSymbol.getKind() === TokenKind.Py_Async) {
             const op1 = this.curSymbol;
             this.advance();
             const left = this.parseAtom();
             const nodes : ASTNode[] = [];
-            while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ])
-            {
+            while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
                 nodes.push( new ASTNode() ); // parseTrailer
             }
             return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), op1, left, nodes.reverse());
         }
         const left = this.parseAtom();
         const nodes : ASTNode[] = [];
-        while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ])
-        {
+        while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
             nodes.push( new ASTNode() ); // parseTrailer
         }
         return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes.reverse());
@@ -412,8 +442,24 @@ class PythonCoreParser {
         return left;
     }
 
-
     parseFactor() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const op1 = this.curSymbol;
+        switch (op1.getKind()) {
+            case TokenKind.Py_Plus: {
+                const right = this.parseFactor();
+                return new ASTUnaryPlus(startPos, this.curSymbol.getStartPosition(), op1, right);
+            }
+            case TokenKind.Py_Minus: {
+                const right = this.parseFactor();
+                return new ASTUnaryMinus(startPos, this.curSymbol.getStartPosition(), op1, right);
+            }
+            case TokenKind.Py_BitInvert: {
+                const right = this.parseFactor();
+                return new ASTUnaryBitInvert(startPos, this.curSymbol.getStartPosition(), op1, right);
+            }
+            default:
+                return this.parsePower();
+        }
     }
 }
