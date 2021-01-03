@@ -376,6 +376,32 @@ class ASTMinusExpr extends ASTNode {
     }
 }
 
+class ASTShiftLeftExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTShiftRightExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -595,6 +621,25 @@ class PythonCoreParser {
                     break;
                 case TokenKind.Py_Minus: 
                     res = new ASTMinusExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+            }
+        }
+        return res;
+    }
+
+    parseShiftExpr() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseArith();
+        while (this.curSymbol.getKind() in [ TokenKind.Py_ShiftLeft, TokenKind.Py_ShiftRight ]) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseArith();
+            switch (op1.getKind()) {
+                case TokenKind.Py_ShiftLeft: 
+                    res = new ASTShiftLeftExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                case TokenKind.Py_ShiftRight: 
+                    res = new ASTShiftRightExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
             }
         }
