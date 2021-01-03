@@ -36,7 +36,7 @@ enum TokenKind {
     Py_Mul, Py_Power, Py_Div, Py_FloorDiv, Py_Modulo, Py_Matrice, Py_ShiftLeft, Py_ShiftRight, Py_BitAnd,
     Py_BitOr, Py_BitXor, Py_BitInvert, Py_Less, Py_Greater, Py_LessEqual, Py_GreaterEqual, Py_Equal, 
     Py_NotEqual, Py_LeftParen, Py_RightParen, Py_LeftBracket, Py_RightBracket, Py_LeftCurly, Py_RightCurly, 
-    Py_Comma, Py_Colon, PyColonAssign, Py_Dot, Py_Elipsis, Py_SemiColon, Py_Assign, Py_Arrow, Py_PlusAssign,
+    Py_Comma, Py_Colon, Py_ColonAssign, Py_Dot, Py_Elipsis, Py_SemiColon, Py_Assign, Py_Arrow, Py_PlusAssign,
     Py_MinusAssign, Py_MulAssign, Py_PowerAssign, Py_DivAssign, Py_FloorDivAssign, Py_ModuloAssign, 
     Py_MatriceAssign, Py_BitAndAssign, Py_BitOrAssign, Py_BitXorAssign, Py_ShiftLeftAssign, Py_ShiftRightAssign, 
     Name, Number, String, TypeComment
@@ -1122,6 +1122,14 @@ class PythonCoreParser {
     }
 
     parseNamedExpr() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const left = this.parseTest();
+        if (this.curSymbol.getKind() === TokenKind.Py_ColonAssign) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseTest();
+            return new ASTNamedExpr(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+        }
+        return left;
     }
 }
