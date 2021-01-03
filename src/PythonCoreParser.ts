@@ -586,6 +586,43 @@ class ASTIsExpr extends ASTNode {
     }
 }
 
+class ASTNotTest extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTAndTest extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTOrTest extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -942,5 +979,16 @@ class PythonCoreParser {
             }
         }
         return res;
+    }
+
+    parseNotTest() : ASTNode {
+        if (this.curSymbol.getKind() === TokenKind.Py_Not) {
+            const startPos = this.curSymbol.getStartPosition();
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseNotTest();
+            return new ASTNotTest(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        return this.parseComparisonExpr();
     }
 }
