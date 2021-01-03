@@ -533,37 +533,24 @@ class PythonCoreParser {
         let res = this.parseFactor();
         while (this.curSymbol.getKind() in [ TokenKind.Py_Mul, TokenKind.Py_Div, TokenKind.Py_FloorDiv, TokenKind.Py_Modulo, TokenKind.Py_Matrice ]) {
             const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseFactor();
             switch (op1.getKind()) {
-                case TokenKind.Py_Mul: {
-                    this.advance();
-                    const right = this.parseFactor();
+                case TokenKind.Py_Mul: 
                     res = new ASTMulExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
-                }
-                break;
-                case TokenKind.Py_Div: {
-                    this.advance();
-                    const right = this.parseFactor();
+                    break;
+                case TokenKind.Py_Div: 
                     res = new ASTDivExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
-                }
-                break;
-                case TokenKind.Py_FloorDiv: {
-                    this.advance();
-                    const right = this.parseFactor();
+                    break;
+                case TokenKind.Py_FloorDiv: 
                     res = new ASTFloorDivExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
-                }
-                break;
-                case TokenKind.Py_Modulo: {
-                    this.advance();
-                    const right = this.parseFactor();
+                    break;
+                case TokenKind.Py_Modulo: 
                     res = new ASTModuloExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
-                }
-                break;
-                case TokenKind.Py_Matrice: {
-                    this.advance();
-                    const right = this.parseFactor();
+                    break;
+                case TokenKind.Py_Matrice: 
                     res = new ASTMatriceExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
-                }
-                break;
+                    break;
             }
         }
         return res;
