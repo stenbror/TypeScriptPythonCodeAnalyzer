@@ -441,6 +441,17 @@ class ASTBitOrExpr extends ASTNode {
     }
 }
 
+class ASTStarExpr extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -719,5 +730,16 @@ class PythonCoreParser {
             res = new ASTBitOrExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
         }
         return res;
+    }
+
+    parseStarExpr() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseOrExpr();
+            return new ASTStarExpr(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        throw new SyntaxErrorException(startPos, "Missing '*' in star expression!", this.curSymbol);
     }
 }
