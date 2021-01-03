@@ -226,6 +226,19 @@ class ASTDicitionaryLiteral extends ASTNode {
     }
 }
 
+class ASTAtomExpr extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Nodes: ASTNode[];
+
+    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, nodes: ASTNode[]) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Left = left;
+        this.Nodes = nodes;
+    }
+}
+
 
 
 
@@ -352,6 +365,25 @@ class PythonCoreParser {
     }
 
     parseAtomExpr() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() == TokenKind.Py_Async)
+        {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseAtom();
+            const nodes : ASTNode[] = [];
+            while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ])
+            {
+                nodes.push( new ASTNode() ); // parseTrailer
+            }
+            return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), op1, left, nodes.reverse());
+        }
+        const left = this.parseAtom();
+        const nodes : ASTNode[] = [];
+        while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ])
+        {
+            nodes.push( new ASTNode() ); // parseTrailer
+        }
+        return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes.reverse());
     }
 }
