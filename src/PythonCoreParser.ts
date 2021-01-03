@@ -350,6 +350,32 @@ class ASTMatriceExpr extends ASTNode {
     }
 }
 
+class ASTPlusExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTMinusExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -550,6 +576,25 @@ class PythonCoreParser {
                     break;
                 case TokenKind.Py_Matrice: 
                     res = new ASTMatriceExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+            }
+        }
+        return res;
+    }
+
+    parseArith() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseTerm();
+        while (this.curSymbol.getKind() in [ TokenKind.Py_Plus, TokenKind.Py_Minus ]) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseTerm();
+            switch (op1.getKind()) {
+                case TokenKind.Py_Plus: 
+                    res = new ASTPlusExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                case TokenKind.Py_Minus: 
+                    res = new ASTMinusExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
             }
         }
