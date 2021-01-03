@@ -452,6 +452,140 @@ class ASTStarExpr extends ASTNode {
     }
 }
 
+class ASTLessExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTLessEqualExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTGreaterExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTGreaterEqualExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTNotEqualExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTEqualExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTInExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTNotInExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator1: Token;
+    private Operator2: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator1: Token, operator2: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator1 = operator1;
+        this.Operator2 = operator2;
+        this.Right = right;
+    }
+}
+
+class ASTIsNotExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator1: Token;
+    private Operator2: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator1: Token, operator2: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator1 = operator1;
+        this.Operator2 = operator2;
+        this.Right = right;
+    }
+}
+
+class ASTIsExpr extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -741,5 +875,72 @@ class PythonCoreParser {
             return new ASTStarExpr(startPos, this.curSymbol.getStartPosition(), op1, right);
         }
         throw new SyntaxErrorException(startPos, "Missing '*' in star expression!", this.curSymbol);
+    }
+
+    parseComparisonExpr() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let res = this.parseOrExpr();
+        while (this.curSymbol.getKind() in [ TokenKind.Py_Less, TokenKind.Py_LessEqual, TokenKind.Py_Equal, TokenKind.Py_GreaterEqual, TokenKind.Py_Greater, TokenKind.Py_NotEqual, TokenKind.Py_Is, TokenKind.Py_In, TokenKind.Py_Not ]) {
+            const op1 = this.curSymbol;
+            this.advance();
+            switch (op1.getKind()) {
+                case TokenKind.Py_Less: {
+                    const right = this.parseOrExpr();
+                    res = new ASTLessExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
+                case TokenKind.Py_LessEqual: {
+                    const right = this.parseOrExpr();
+                    res = new ASTLessEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
+                case TokenKind.Py_Equal: {
+                    const right = this.parseOrExpr();
+                    res = new ASTEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
+                case TokenKind.Py_GreaterEqual: {
+                    const right = this.parseOrExpr();
+                    res = new ASTGreaterEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
+                case TokenKind.Py_Greater: {
+                    const right = this.parseOrExpr();
+                    res = new ASTGreaterExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
+                case TokenKind.Py_NotEqual: {
+                    const right = this.parseOrExpr();
+                    res = new ASTNotEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    break;
+                }
+                case TokenKind.Py_Is: {
+                    if (this.curSymbol.getKind() === TokenKind.Py_Not) {
+                        const op2 = this.curSymbol;
+                        this.advance();
+                        const right = this.parseOrExpr();
+                        res = new ASTIsNotExpr(startPos, this.curSymbol.getStartPosition(), res, op1, op2, right);
+                    }
+                    else {
+                        const right = this.parseOrExpr();
+                        res = new ASTIsExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    }
+                    break;
+                }
+                case TokenKind.Py_Not: {
+                    if (this.curSymbol.getKind() === TokenKind.Py_In) {
+                        const op2 = this.curSymbol;
+                        this.advance();
+                        const right = this.parseOrExpr();
+                        res = new ASTNotInExpr(startPos, this.curSymbol.getStartPosition(), res, op1, op2, right);
+                    }
+                    else {
+                        throw new SyntaxErrorException(startPos, "Missing 'in' in 'not in' expression!", this.curSymbol);
+                    }
+                    break;
+                }
+            }
+        }
+        return res;
     }
 }
