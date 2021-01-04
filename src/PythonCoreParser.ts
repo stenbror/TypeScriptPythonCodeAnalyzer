@@ -679,6 +679,43 @@ class ASTTestListComp extends ASTNode {
     }
 }
 
+class ASTDotName extends ASTNode {
+    private Operator1: Token;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, operator1: Token, operator2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Operator2 = operator2;
+    }
+}
+
+class ASTCallNode extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, operator1: Token, right : ASTNode, operator2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Right = right;
+        this.Operator2 = operator2;
+    }
+}
+
+class ASTIndexNode extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, operator1: Token, right : ASTNode, operator2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Right = right;
+        this.Operator2 = operator2;
+    }
+}
+
 
 
 
@@ -1180,7 +1217,49 @@ class PythonCoreParser {
     }
 
     parseTrailer() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_Dot: {
+                const op1 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() != TokenKind.Name) {
+                    throw new SyntaxErrorException(startPos, "Missing name literal after '.'", this.curSymbol);
+                }
+                const op2 = this.curSymbol;
+                this.advance();
+                return new ASTDotName(startPos, this.curSymbol.getStartPosition(), op1, op2);
+            }
+            case TokenKind.Py_LeftParen: {
+                const op1 = this.curSymbol;
+                this.advance();
+                let right = new ASTNode();
+                if (this.curSymbol.getKind() != TokenKind.Py_RightParen) {
+                    right = this.parseArgList();
+                }
+                if (this.curSymbol.getKind() != TokenKind.Py_RightParen) {
+                    throw new SyntaxErrorException(startPos, "Missing ')' in call expression!", this.curSymbol);
+                }
+                const op2 = this.curSymbol;
+                this.advance();
+                return new ASTCallNode(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+            }
+            case TokenKind.Py_LeftBracket: {
+                const op1 = this.curSymbol;
+                this.advance();
+                let right = new ASTNode();
+                if (this.curSymbol.getKind() != TokenKind.Py_RightBracket) {
+                    right = this.parseSubscriptList();
+                }
+                if (this.curSymbol.getKind() != TokenKind.Py_RightBracket) {
+                    throw new SyntaxErrorException(startPos, "Missing ']' in index expression!", this.curSymbol);
+                }
+                const op2 = this.curSymbol;
+                this.advance();
+                return new ASTIndexNode(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+            }
+            default:
+                throw new SyntaxErrorException(startPos, "Expecting '.', '(' or '['", this.curSymbol);
+        }
     }
 
     parseSubscriptList() : ASTNode {
@@ -1220,6 +1299,10 @@ class PythonCoreParser {
     }
 
     parseYieldExpr() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseArgList() : ASTNode {
         return new ASTNode();
     }
 }
