@@ -668,6 +668,17 @@ class ASTNamedExpr extends ASTNode {
     }
 }
 
+class ASTTestListComp extends ASTNode {
+    private Nodes : ASTNode[];
+    private Commas: Token[];
+    
+    constructor(startPos: number, endPos: number, nodes: ASTNode[], commas: Token[]) {
+        super(startPos, endPos);
+        this.Nodes = nodes;
+        this.Commas = commas;
+    }
+}
+
 
 
 
@@ -1134,7 +1145,38 @@ class PythonCoreParser {
     }
 
     parseTestListComp() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes : ASTNode[] = [];
+        const commas : Token[] = [];
+        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            nodes.push( this.parseStarExpr() );
+        }
+        else {
+            nodes.push( this.parseNamedExpr() );
+        }
+        if (this.curSymbol.getKind() in [ TokenKind.Py_Async, TokenKind.Py_For ]) {
+            nodes.push( this.parseCompCompFor() );
+        }
+        else {
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                commas.push( this.curSymbol );
+                this.advance();
+                switch (this.curSymbol.getKind()) {
+                    case TokenKind.Py_Comma:
+                        throw new SyntaxErrorException(startPos, "Missing item in list between two commas!", this.curSymbol);
+                    case TokenKind.Py_RightParen:
+                    case TokenKind.Py_RightBracket:
+                        break;
+                    case TokenKind.Py_Mul:
+                        nodes.push( this.parseStarExpr() );
+                        break;
+                    default:
+                        nodes.push( this.parseNamedExpr() );
+                        break;
+                }
+            }
+        }
+        return new ASTTestListComp(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), commas.reverse());
     }
 
     parseTrailer() : ASTNode {
