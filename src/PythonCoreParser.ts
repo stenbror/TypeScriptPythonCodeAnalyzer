@@ -1305,7 +1305,24 @@ class PythonCoreParser {
     }
 
     parseSubscript() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        let from = new ASTNode();
+        let op1 = new Token(-1, -1, TokenKind.Empty, []);
+        let to = new ASTNode();
+        let op2 = new Token(-1, -1, TokenKind.Empty, []);
+        let step = new ASTNode();
+        if (this.curSymbol.getKind() != TokenKind.Py_Colon) from = this.parseTest();
+        if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+            op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() != TokenKind.Py_Comma && this.curSymbol.getKind() != TokenKind.Py_RightBracket && this.curSymbol.getKind() != TokenKind.Py_Colon) to = this.parseTest();
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                op2 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() != TokenKind.Py_Comma && this.curSymbol.getKind() != TokenKind.Py_RightBracket) step = this.parseTest();
+            }
+        }
+        return new ASTSubscriptNode(startPos, this.curSymbol.getStartPosition(), from, op1, to, op2, step);
     }
 
     parseExprList() : ASTNode {
