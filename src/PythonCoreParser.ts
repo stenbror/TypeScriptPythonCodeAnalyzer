@@ -716,6 +716,34 @@ class ASTIndexNode extends ASTNode {
     }
 }
 
+class ASTSubscriptListNode extends ASTNode {
+    private Nodes : ASTNode[];
+    private Commas: Token[];
+    
+    constructor(startPos: number, endPos: number, nodes: ASTNode[], commas: Token[]) {
+        super(startPos, endPos);
+        this.Nodes = nodes;
+        this.Commas = commas;
+    }
+}
+
+class ASTSubscriptNode extends ASTNode {
+    private From: ASTNode;
+    private Operator1: Token;
+    private To: ASTNode;
+    private Operator2: Token;
+    private Step: ASTNode;
+
+    constructor(startPos: number, endPos: number, one: ASTNode, op1: Token, two: ASTNode, op2: Token, three: ASTNode) {
+        super(startPos, endPos);
+        this.From = one;
+        this.Operator1 = op1;
+        this.To = two;
+        this.Operator2 = op2;
+        this.Step = three;
+    }
+}
+
 
 
 
@@ -1263,7 +1291,17 @@ class PythonCoreParser {
     }
 
     parseSubscriptList() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes : ASTNode[] = [];
+        const separators : Token[] = [];
+        nodes.push( this.parseSubscript() );
+        while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            separators.push( this.curSymbol );
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_RightBracket) break;
+            nodes.push( this.parseSubscript() );
+        }
+        return new ASTSubscriptListNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
     }
 
     parseSubscript() : ASTNode {
