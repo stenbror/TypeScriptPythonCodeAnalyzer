@@ -831,6 +831,30 @@ class ASTYieldNode extends ASTNode {
     }
 }
 
+class ASTArgListNode extends ASTNode {
+    private Nodes : ASTNode[];
+    private Commas: Token[];
+    
+    constructor(startPos: number, endPos: number, nodes: ASTNode[], commas: Token[]) {
+        super(startPos, endPos);
+        this.Nodes = nodes;
+        this.Commas = commas;
+    }
+}
+
+class ASTArgumentNode extends ASTNode {
+    private Left : ASTNode;
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1545,7 +1569,17 @@ class PythonCoreParser {
     }
 
     parseArgList() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes : ASTNode[] = [];
+        const separators : Token[] = [];
+        nodes.push( this.parseSubscript() );
+        while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            separators.push( this.curSymbol );
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_RightParen) break;
+            nodes.push( this.parseSubscript() );
+        }
+        return new ASTArgListNode(startPos, this.curSymbol.getStartPosition(),nodes.reverse(), separators.reverse());
     }
 
     parseArgument() : ASTNode {
