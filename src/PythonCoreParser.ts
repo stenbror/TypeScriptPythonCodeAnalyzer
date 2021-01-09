@@ -807,6 +807,30 @@ class ASTCompIfNode extends ASTNode {
     }
 }
 
+class ASTYieldFromNode extends ASTNode {
+    private Operator1: Token;
+    private Operator2: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator1: Token, operator2: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Operator2 = operator2;
+        this.Right = right;
+    }
+}
+
+class ASTYieldNode extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator1: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1497,7 +1521,27 @@ class PythonCoreParser {
     }
 
     parseYieldExpr() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Yield) {
+            const op1 = this.curSymbol;
+            this.advance();
+            switch (this.curSymbol.getKind()) {
+                case TokenKind.Py_SemiColon:
+                case TokenKind.Newline:
+                    return new ASTYieldNode(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode());
+                case TokenKind.Py_From: {
+                    const op2 = this.curSymbol;
+                    this.advance();
+                    const right = this.parseTest();
+                    return new ASTYieldFromNode(startPos, this.curSymbol.getStartPosition(), op1, op2, right);
+                }
+                default: {
+                    const right = this.parseTestListComp();
+                    return new ASTYieldNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+                }
+            }
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'yield' in yield expression!", this.curSymbol);
     }
 
     parseArgList() : ASTNode {
