@@ -1242,7 +1242,7 @@ class PythonCoreParser {
             nodes.push( this.parseNamedExpr() );
         }
         if (this.curSymbol.getKind() in [ TokenKind.Py_Async, TokenKind.Py_For ]) {
-            nodes.push( this.parseCompCompFor() );
+            nodes.push( this.parseCompFor() );
         }
         else {
             while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
@@ -1395,14 +1395,22 @@ class PythonCoreParser {
     }
 
     parseCompIter() : ASTNode {
-        return new ASTNode();
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_Async:
+            case TokenKind.Py_For:
+                return this.parseCompFor();
+            case TokenKind.Py_If:
+                return this.parseCompIf();
+            default:
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'async', 'for' or 'if' keyword!", this.curSymbol);
+        }
     }
 
     parseCompSyncCompFor() : ASTNode {
         return new ASTNode();
     }
 
-    parseCompCompFor() : ASTNode {
+    parseCompFor() : ASTNode {
         return new ASTNode();
     }
 
@@ -1415,6 +1423,10 @@ class PythonCoreParser {
     }
 
     parseArgList() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseArgument() : ASTNode {
         return new ASTNode();
     }
 }
