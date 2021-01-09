@@ -855,6 +855,54 @@ class ASTArgumentNode extends ASTNode {
     }
 }
 
+class ASTDictionaryContainerNode extends ASTNode {
+    private Keys: ASTNode[];
+    private Colon: Token[];
+    private Values: ASTNode[];
+    private Separators: Token[];
+
+    constructor(startPos: number, endPos: number, keys: ASTNode[], colon: Token[], values: ASTNode[], separators: Token[]) {
+        super(startPos, endPos);
+        this.Keys = keys;
+        this.Colon = colon;
+        this.Values = values;
+        this.Separators = separators;
+    }
+}
+
+class ASTSetContainerNode extends ASTNode {
+    private Keys: ASTNode[];
+    private Separators: Token[];
+
+    constructor(startPos: number, endPos: number, keys: ASTNode[], separators: Token[]) {
+        super(startPos, endPos);
+        this.Keys = keys;
+        this.Separators = separators;
+    }
+}
+
+class ASTSetNameNode extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = op1;
+        this.Right = right;
+    }
+}
+
+class ASTDictionaryNameNode extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = op1;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1480,7 +1528,82 @@ class PythonCoreParser {
     }
 
     parseDictorSetMaker() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const keys : ASTNode[] = [];
+        const colons : Token[] = [];
+        const values : ASTNode[] = [];
+        const separators : Token[] = [];
+        let isDict = false;
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_Mul: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.parseOrExpr();
+                keys.push( new ASTSetNameNode(startPos, this.curSymbol.getStartPosition(), op1, right) );
+                break;
+            }
+            case TokenKind.Py_Power: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.parseOrExpr();
+                keys.push( new ASTDictionaryNameNode(startPos, this.curSymbol.getStartPosition(), op1, right) );
+                break;
+            }
+            default: {
+                keys.push( this.parseTest() );
+                if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                    isDict = true;
+                    colons.push( this.curSymbol );
+                    this.advance();
+                    values.push( this.parseTest() );
+                }
+                break;
+            }
+        }
+        if (this.curSymbol.getKind() in [ TokenKind.Py_Async, TokenKind.Py_For ]) {
+            keys.push( this.parseCompFor() );
+        }
+        else if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_RightCurly) break;
+                switch (this.curSymbol.getKind()) {
+                    case TokenKind.Py_Mul: {
+                        const op1 = this.curSymbol;
+                        this.advance();
+                        const right = this.parseOrExpr();
+                        keys.push( new ASTSetNameNode(startPos, this.curSymbol.getStartPosition(), op1, right) );
+                        break;
+                    }
+                    case TokenKind.Py_Power: {
+                        const op1 = this.curSymbol;
+                        this.advance();
+                        const right = this.parseOrExpr();
+                        keys.push( new ASTDictionaryNameNode(startPos, this.curSymbol.getStartPosition(), op1, right) );
+                        break;
+                    }
+                    default: {
+                        keys.push( this.parseTest() );
+                        if (isDict) {
+                            if (this.curSymbol.getKind() == TokenKind.Py_Colon) {
+                                colons.push( this.curSymbol );
+                                this.advance();
+                                values.push( this.parseTest() );
+                            }
+                            else {
+                                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in dictionary!", this.curSymbol);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (isDict) {
+            return new ASTDictionaryContainerNode(startPos, this.curSymbol.getStartPosition(), keys.reverse(), colons.reverse(), values.reverse(), separators.reverse());
+        }
+        return new ASTSetContainerNode(startPos, this.curSymbol.getStartPosition(), keys.reverse(), separators.reverse());
     }
 
     parseCompIter() : ASTNode {
