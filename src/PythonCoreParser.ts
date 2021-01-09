@@ -744,6 +744,28 @@ class ASTSubscriptNode extends ASTNode {
     }
 }
 
+class ASTExprListNode extends ASTNode {
+    private Nodes : ASTNode[];
+    private Commas: Token[];
+    
+    constructor(startPos: number, endPos: number, nodes: ASTNode[], commas: Token[]) {
+        super(startPos, endPos);
+        this.Nodes = nodes;
+        this.Commas = commas;
+    }
+}
+
+class ASTTestListNode extends ASTNode {
+    private Nodes : ASTNode[];
+    private Commas: Token[];
+    
+    constructor(startPos: number, endPos: number, nodes: ASTNode[], commas: Token[]) {
+        super(startPos, endPos);
+        this.Nodes = nodes;
+        this.Commas = commas;
+    }
+}
+
 
 
 
@@ -1326,7 +1348,27 @@ class PythonCoreParser {
     }
 
     parseExprList() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes : ASTNode[] = [];
+        const separators : Token[] = [];
+        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            nodes.push( this.parseStarExpr() );
+        }
+        else {
+            nodes.push( this.parseOrExpr() );
+        }
+        while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            separators.push(this.curSymbol);
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_In) break;
+            else if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+                nodes.push( this.parseStarExpr() );
+            }
+            else {
+                nodes.push( this.parseOrExpr() );
+            }
+        }
+        return new ASTExprListNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
     }
 
     parseTestList() : ASTNode {
