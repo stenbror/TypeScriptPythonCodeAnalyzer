@@ -1372,7 +1372,22 @@ class PythonCoreParser {
     }
 
     parseTestList() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes : ASTNode[] = [];
+        const separators : Token[] = [];
+        nodes.push( this.parseTest() );
+        while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            separators.push(this.curSymbol);
+            this.advance();
+            switch (this.curSymbol.getKind()) {
+                case TokenKind.Newline:
+                case TokenKind.Py_SemiColon:
+                    break;
+                default:
+                    nodes.push( this.parseTest() );
+            }
+        }
+        return new ASTTestListNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
     }
 
     parseDictorSetMaker() : ASTNode {
