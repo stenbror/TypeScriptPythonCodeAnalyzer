@@ -766,6 +766,34 @@ class ASTTestListNode extends ASTNode {
     }
 }
 
+class ASTCompForNode extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = operator;
+        this.Right = right;
+    }
+}
+
+class ASTSyncCompForNode extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Operator2: Token;
+    private Right: ASTNode;
+    private Next: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator1: Token, left : ASTNode, operator2: Token, right: ASTNode, next: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Left = left;
+        this.Operator2 = operator2;
+        this.Right = right;
+        this.Next = next;
+    }
+}
+
 
 
 
@@ -1407,11 +1435,37 @@ class PythonCoreParser {
     }
 
     parseCompSyncCompFor() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_For) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseExprList();
+            if (this.curSymbol.getKind() === TokenKind.Py_In) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseOrTest();
+                if (this.curSymbol.getKind() in [ TokenKind.Py_Async, TokenKind.Py_For, TokenKind.Py_If]) {
+                    const next = this.parseCompIter();
+                    return new ASTSyncCompForNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, next);
+                }
+                else {
+                    return new ASTSyncCompForNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, new ASTNode());
+                }
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'in' in for comprehension expression!", this.curSymbol);
+        }
         return new ASTNode();
     }
 
     parseCompFor() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Async) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseCompSyncCompFor();
+            return new ASTCompForNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        return this.parseCompSyncCompFor();
     }
 
     parseCompIf() : ASTNode {
