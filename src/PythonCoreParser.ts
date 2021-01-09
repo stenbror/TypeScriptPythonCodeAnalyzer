@@ -1583,6 +1583,34 @@ class PythonCoreParser {
     }
 
     parseArgument() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_Mul:
+            case TokenKind.Py_Power: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.parseTest();
+                return new ASTArgumentNode(startPos, this.curSymbol.getStartPosition(), new ASTNode(), op1, right);
+            }
+            default: {
+                const left = this.parseTest();
+                switch (this.curSymbol.getKind()) {
+                    case TokenKind.Py_Async:
+                    case TokenKind.Py_For: {
+                        const right = this.parseCompFor();
+                        return new ASTArgumentNode(startPos, this.curSymbol.getStartPosition(), left, new Token(-1, -1, TokenKind.Empty, []), right);
+                    }
+                    case TokenKind.Py_Assign:
+                    case TokenKind.Py_ColonAssign: {
+                        const op1 = this.curSymbol;
+                        this.advance();
+                        const right = this.parseTest();
+                        return new ASTArgumentNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+                    }
+                    default:
+                        return new ASTArgumentNode(startPos, this.curSymbol.getStartPosition(), left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
+                }
+            }
+        }
     }
 }
