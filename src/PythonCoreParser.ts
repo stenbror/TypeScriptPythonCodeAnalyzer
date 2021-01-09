@@ -226,6 +226,19 @@ class ASTDicitionaryLiteral extends ASTNode {
     }
 }
 
+class ASTSetLiteral extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Operator2: Token;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode, op2: Token) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Right = right;
+    }
+}
+
 class ASTAtomExpr extends ASTNode {
     private Operator1: Token;
     private Left: ASTNode;
@@ -1012,14 +1025,17 @@ class PythonCoreParser {
                     return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
                 }
                 else {
-                    const right = this.parseTestListComp();
+                    const right = this.parseDictorSetMaker();
                     if (this.curSymbol.getKind() === TokenKind.Py_RightCurly) {
                         const op2 = this.curSymbol;
                         this.advance();
-                        return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                        if (typeof(right) === typeof(ASTDictionaryContainerNode)) {
+                            return new ASTDicitionaryLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                        }
+                        return new ASTSetLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
                     }
                     else {
-                        throw new SyntaxErrorException(startPos, "Missing '}' in tuple literal!", this.curSymbol);
+                        throw new SyntaxErrorException(startPos, "Missing '}' in dictionary / set literal!", this.curSymbol);
                     }
                 }
             }
