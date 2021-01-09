@@ -794,6 +794,19 @@ class ASTSyncCompForNode extends ASTNode {
     }
 }
 
+class ASTCompIfNode extends ASTNode {
+    private Operator1: Token;
+    private Right: ASTNode;
+    private Next: ASTNode;
+
+    constructor(startPos: number, endPos: number, operator1: Token, right: ASTNode, next: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = operator1;
+        this.Right = right;
+        this.Next = next;
+    }
+}
+
 
 
 
@@ -1469,7 +1482,18 @@ class PythonCoreParser {
     }
 
     parseCompIf() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_If) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseTestNoCond();
+            if (this.curSymbol.getKind() in [ TokenKind.Py_Async, TokenKind.Py_For, TokenKind.Py_If]) {
+                const next = this.parseCompIter();
+                return new ASTCompIfNode(startPos, this.curSymbol.getStartPosition(), op1, right, next);
+            }
+            return new ASTCompIfNode(startPos, this.curSymbol.getStartPosition(), op1, right, new ASTNode());
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'if' in if comprehension expression!", this.curSymbol);
     }
 
     parseYieldExpr() : ASTNode {
