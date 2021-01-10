@@ -1771,6 +1771,8 @@ class PythonCoreParser {
                 return this.parseWithStmt();
             case TokenKind.Py_Class:
                 return this.parseClassStmt();
+            case TokenKind.Py_Def:
+                return this.parseFuncDefStmt();
             default:
                 throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting compound statement!", this.curSymbol);
         }
@@ -1821,7 +1823,20 @@ class PythonCoreParser {
     }
 
     parseStmt() : ASTNode {
-        return new ASTNode();
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_Matrice:
+            case TokenKind.Py_Async:
+            case TokenKind.Py_Class:
+            case TokenKind.Py_If:
+            case TokenKind.Py_For:
+            case TokenKind.Py_While:
+            case TokenKind.Py_Try:
+            case TokenKind.Py_With:
+            case TokenKind.Py_Def:
+                return this.parseCompoundStmt();
+            default:
+                return this.parseSimpleStmt();
+        }
     }
 
     parseSimpleStmt() : ASTNode {
