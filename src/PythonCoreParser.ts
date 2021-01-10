@@ -1752,4 +1752,204 @@ class PythonCoreParser {
             }
         }
     }
+
+    parseCompoundStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseAsyncStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseIfStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseElseStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseWhileStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseForStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseTryStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseWithStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseWithItemStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseExceptStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseSuiteStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseSimpleStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseSmallStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseExprStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseAnnAssignStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseTestListStarExprStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseDelStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parsePassStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseFlowStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseBreakStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseContinueStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseReturnStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseYieldStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseRaiseStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseImportStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseImportNameStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseImportFromStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseImportAsNameStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseDottedAsNameStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseImportAsNamesStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseDottedAsNamesStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseDottedNameStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseGlobalStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseNonlocalStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseAssertStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseSingleInputStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseFileInputStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseEvalInputStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseAsyncFuncDefStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseFuncDefStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseParametersStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseTypedArgsListStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseTFPStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseVarArgsListStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseVFPDefStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseFuncBodySuiteStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseFuncTypeInputStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseFuncTypeStmt() : ASTNode {
+        return new ASTNode();
+    }
+
+    parseTypeListStmt() : ASTNode {
+        return new ASTNode();
+    }
 }
