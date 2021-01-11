@@ -927,6 +927,27 @@ class ASTAsyncNode extends ASTNode {
     }
 }
 
+class ASTClassNode extends ASTNode {
+    private Operator1: Token;
+    private Operator2: Token;
+    private Operator3: Token;
+    private Operator4: Token;
+    private Operator5: Token;
+    private Left: ASTNode;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, op2: Token, op3: Token, left: ASTNode, op4: Token, op5: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op1;
+        this.Operator3 = op1;
+        this.Operator4 = op1;
+        this.Operator5 = op1;
+        this.Left = left;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1790,7 +1811,40 @@ class PythonCoreParser {
     }
 
     parseClassStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Class) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Name) {
+                const op2 = this.curSymbol;
+                this.advance();
+                let op3 = new Token(-1, -1, TokenKind.Empty, []);
+                let op4 = new Token(-1, -1, TokenKind.Empty, []);
+                let left = new ASTNode();
+                if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
+                    op3 = this.curSymbol;
+                    this.advance();
+                    if (this.curSymbol.getKind() != TokenKind.Py_RightParen) left = this.parseArgList();
+                    if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
+                        op4 = this.curSymbol;
+                        this.advance();
+                    }
+                    else {
+                        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' in class declaration!", this.curSymbol);
+                    }
+                }
+                if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                    const op5 = this.curSymbol;
+                    this.advance();
+                    const right = this.parseSuiteStmt();
+                    return new ASTClassNode(startPos, this.curSymbol.getStartPosition(), op1, op2, op3, left, op4, op5, right);
+                }
+                else {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in class declaration!", this.curSymbol);
+                } 
+            }
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'class' in class declaration!", this.curSymbol);
     }
 
     parseAsyncStmt() : ASTNode {
