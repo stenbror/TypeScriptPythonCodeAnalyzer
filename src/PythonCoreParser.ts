@@ -916,6 +916,17 @@ class ASTDictionaryNameNode extends ASTNode {
     }
 }
 
+class ASTAsyncNode extends ASTNode {
+    private Operator: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator = op1;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1783,7 +1794,28 @@ class PythonCoreParser {
     }
 
     parseAsyncStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Async) {
+            const op1 = this.curSymbol;
+            this.advance();
+            switch (this.curSymbol.getKind()) {
+                case TokenKind.Py_Def: {
+                    const right = this.parseFuncDefStmt();
+                    return new ASTAsyncNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+                }
+                case TokenKind.Py_With: {
+                    const right = this.parseWithStmt();
+                    return new ASTAsyncNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+                }
+                case TokenKind.Py_For: {
+                    const right = this.parseForStmt();
+                    return new ASTAsyncNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+                }
+                default:
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'def', 'with' or 'for' after 'async' statement!", this.curSymbol);
+            } 
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'async' statement!", this.curSymbol);
     }
 
     parseIfStmt() : ASTNode {
