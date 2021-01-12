@@ -948,6 +948,40 @@ class ASTClassNode extends ASTNode {
     }
 }
 
+class ASTIfNode extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Operator2: Token;
+    private Right: ASTNode;
+    private ElifNodes: ASTNode[];
+    private ElseNode: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, op2: Token, right: ASTNode, elifNodes: ASTNode[], elseNode: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Left = left;
+        this.Operator2 = op2;
+        this.Right = right;
+        this.ElifNodes = elifNodes;
+        this.ElseNode = elseNode;
+    }
+}
+
+class ASTElifNode extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Operator2: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, op2: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Left = left;
+        this.Operator2 = op1;
+        this.Right = right;
+    }
+}
+
 class ASTElseNode extends ASTNode {
     private Operator1: Token;
     private Operator2: Token;
@@ -1887,7 +1921,38 @@ class PythonCoreParser {
 
     parseIfStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
-        return new ASTNode();
+        const elifNodes: ASTNode[] = [];
+        let elseNode = new ASTNode();
+        if (this.curSymbol.getKind() === TokenKind.Py_If) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseNamedExpr();
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseSuiteStmt();
+                while (this.curSymbol.getKind() === TokenKind.Py_Elif) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    const one = this.parseNamedExpr();
+                    if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                        const op4 = this.curSymbol;
+                        this.advance();
+                        const two = this.parseSuiteStmt();
+                        elifNodes.push( new ASTElifNode(startPos, this.curSymbol.getStartPosition(), op3, one, op4, two) );
+                    }
+                    else {
+                        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'elif' statement!", this.curSymbol);
+                    }
+                }
+                if (this.curSymbol.getKind() === TokenKind.Py_Else) {
+                    elseNode = this.parseElseStmt();
+                }
+                return new ASTIfNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, elifNodes.reverse(), elseNode);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'if' statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'if' statement!", this.curSymbol);
     }
 
     parseElseStmt() : ASTNode {
