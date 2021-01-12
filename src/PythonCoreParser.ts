@@ -948,6 +948,19 @@ class ASTClassNode extends ASTNode {
     }
 }
 
+class ASTElseNode extends ASTNode {
+    private Operator1: Token;
+    private Operator2: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, op2: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op1;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -1873,11 +1886,24 @@ class PythonCoreParser {
     }
 
     parseIfStmt() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
         return new ASTNode();
     }
 
     parseElseStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Else) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseSuiteStmt();
+                return new ASTElseNode(startPos, this.curSymbol.getStartPosition(), op1, op2, right);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'else' statement!", this.curSymbol);
     }
 
     parseWhileStmt() : ASTNode {
