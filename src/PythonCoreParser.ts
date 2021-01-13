@@ -1035,6 +1035,29 @@ class ASTForNode extends ASTNode {
     }
 }
 
+class ASTTryNode extends ASTNode {
+    private Operator1: Token;
+    private Operator2: Token;
+    private Left: ASTNode;
+    private Excepts: ASTNode[];
+    private Else: ASTNode;
+    private Operator3: Token;
+    private Operator4: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, op2: Token, left: ASTNode, excepts: ASTNode[], elsePart: ASTNode, op3: Token, op4: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Operator3 = op3;
+        this.Operator4 = op4;
+        this.Left = left;
+        this.Right = right;
+        this.Else = elsePart;
+        this.Excepts = excepts;
+    }
+}
+
 
 
 
@@ -1050,7 +1073,7 @@ class PythonCoreParser {
     }
 
     advance() {
-        
+        const a = 1; // Dummy code for tokenizer, implemented later!
     }
 
 
@@ -2065,7 +2088,50 @@ class PythonCoreParser {
     }
 
     parseTryStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Try) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const left = this.parseSuiteStmt();
+                if (this.curSymbol.getKind() === TokenKind.Py_Finally) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                        const op4 = this.curSymbol;
+                        this.advance();
+                        const right = this.parseSuiteStmt();
+                        return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, [], new ASTNode(), op3, op4, right);
+                    }
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'finally' statement!", this.curSymbol);
+                }
+                else {
+                    const nodes: ASTNode[] = [];
+                    nodes.push( this.parseExceptStmt() );
+                    while (this.curSymbol.getKind() === TokenKind.Py_Except) {
+                        nodes.push( this.parseExceptStmt() );
+                    }
+                    let elsePart = new ASTNode();
+                    if (this.curSymbol.getKind() === TokenKind.Py_Else) elsePart = this.parseElseStmt();
+                    if (this.curSymbol.getKind() === TokenKind.Py_Finally) {
+                        const op3 = this.curSymbol;
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                            const op4 = this.curSymbol;
+                            this.advance();
+                            const right = this.parseSuiteStmt();
+                            return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, nodes.reverse(), elsePart, op3, op4, right);
+                        }
+                        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'finally' statement!", this.curSymbol);
+                    }
+                    return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, nodes.reverse(), elsePart, new Token(-1, -1, TokenKind.Empty, []), new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
+                }
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'try' statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'try' statement!", this.curSymbol);
     }
 
     parseWithStmt() : ASTNode {
