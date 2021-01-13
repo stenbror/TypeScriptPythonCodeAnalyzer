@@ -1012,6 +1012,29 @@ class ASTWhileNode extends ASTNode {
     }
 }
 
+class ASTForNode extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Operator2: Token;
+    private Right: ASTNode;
+    private Operator3: Token;
+    private Operator4: Token;
+    private Next: ASTNode;
+    private Else: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, op2: Token, right: ASTNode, op3: Token, op4: Token, next: ASTNode, elsePart: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Left = left;
+        this.Operator2 = op1;
+        this.Right = right;
+        this.Operator3 = op3;
+        this.Operator4 = op4;
+        this.Next = next;
+        this.Else = elsePart;
+    }
+}
+
 
 
 
@@ -2010,6 +2033,34 @@ class PythonCoreParser {
     }
 
     parseForStmt() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_For) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseExprList();
+            if (this.curSymbol.getKind() === TokenKind.Py_In) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseTestList();
+                if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    let tc = new Token(-1, -1, TokenKind.Empty, []);
+                    if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                        tc = this.curSymbol;
+                        this.advance();
+                    }
+                    const next = this.parseSuiteStmt();
+                    if (this.curSymbol.getKind() === TokenKind.Py_Else) {
+                        const elsePart = this.parseElseStmt();
+                        return new ASTForNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, op3, tc, next, elsePart);
+                    }
+                    return new ASTForNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, op3, tc, next, new ASTNode());
+                }
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'for' statement!", this.curSymbol);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'in' in 'for' statement!", this.curSymbol);
+        }
         return new ASTNode();
     }
 
