@@ -995,6 +995,23 @@ class ASTElseNode extends ASTNode {
     }
 }
 
+class ASTWhileNode extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Operator2: Token;
+    private Right: ASTNode;
+    private Next: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, op2: Token, right: ASTNode, next: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Left = left;
+        this.Operator2 = op1;
+        this.Right = right;
+        this.Next = next;
+    }
+}
+
 
 
 
@@ -1966,13 +1983,30 @@ class PythonCoreParser {
                 const right = this.parseSuiteStmt();
                 return new ASTElseNode(startPos, this.curSymbol.getStartPosition(), op1, op2, right);
             }
-            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' statement!", this.curSymbol);
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'else' statement!", this.curSymbol);
         }
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'else' statement!", this.curSymbol);
     }
 
     parseWhileStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_While) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseNamedExpr();
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseSuiteStmt();
+                if (this.curSymbol.getKind() === TokenKind.Py_Else) {
+                    const next = this.parseElseStmt();
+                    return new ASTWhileNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, next);
+                }
+                return new ASTWhileNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, new ASTNode());
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'while' statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'while' in while statement!", this.curSymbol);
     }
 
     parseForStmt() : ASTNode {
