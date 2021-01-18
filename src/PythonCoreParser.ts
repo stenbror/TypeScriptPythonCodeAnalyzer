@@ -1058,6 +1058,38 @@ class ASTTryNode extends ASTNode {
     }
 }
 
+class ASTWithNode extends ASTNode {
+    private Operator1: Token;
+    private WithItems: ASTNode[];
+    private Separartors: Token[];
+    private Operator2: Token;
+    private TypeComment: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, items: ASTNode[], sep: Token[], op2: Token, tc: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.WithItems = items;
+        this.Separartors = sep;
+        this.Operator2 = op2;
+        this.TypeComment = tc;
+        this.Right = right;
+    }
+}
+
+class ASTWithItemNode extends ASTNode {
+    private Left: ASTNode;
+    private Operator1: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, left: ASTNode, op1: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Left = left;
+        this.Operator1 = op1;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -2135,11 +2167,47 @@ class PythonCoreParser {
     }
 
     parseWithStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_With) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const nodes: ASTNode[] = [];
+            const separatrors: Token[] = [];
+            nodes.push( this.parseWithItemStmt() );
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separatrors.push( this.curSymbol );
+                this.advance();
+                nodes.push( this.parseWithItemStmt() );
+            }
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op2 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    const right = this.parseSuiteStmt();
+                    return new ASTWithNode(startPos, this.curSymbol.getStartPosition(), op1, nodes.reverse(), separatrors.reverse(), op2, op3, right);
+                }
+                else {
+                    const right = this.parseSuiteStmt();
+                    return new ASTWithNode(startPos, this.curSymbol.getStartPosition(), op1, nodes.reverse(), separatrors.reverse(), op2, new Token(-1, -1, TokenKind.Empty, []), right);
+                }
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'with' statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'with' statement!", this.curSymbol);
     }
 
     parseWithItemStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const left = this.parseTest();
+        if (this.curSymbol.getKind() === TokenKind.Py_As) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseOrExpr();
+            return new ASTWithItemNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+        }
+        return new ASTWithItemNode(startPos, this.curSymbol.getStartPosition(), left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
     }
 
     parseExceptStmt() : ASTNode {
