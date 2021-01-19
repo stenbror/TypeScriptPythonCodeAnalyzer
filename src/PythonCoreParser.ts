@@ -1090,6 +1090,25 @@ class ASTWithItemNode extends ASTNode {
     }
 }
 
+class ASTExceptNode extends ASTNode {
+    private Operator1: Token;
+    private Left: ASTNode;
+    private Operator2: Token;
+    private Operator3: Token;
+    private Operator4: Token;
+    private Right: ASTNode;
+
+    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, op2: Token, op3: Token, op4: Token, right: ASTNode) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Operator3 = op3;
+        this.Operator4 = op4;
+        this.Left = left;
+        this.Right = right;
+    }
+}
+
 
 
 
@@ -2211,7 +2230,36 @@ class PythonCoreParser {
     }
 
     parseExceptStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Except) {
+            const op1 = this.curSymbol;
+            this.advance();
+            let left = new ASTNode();
+            let op2 = new Token(-1, -1, TokenKind.Empty, []);
+            let op3 = new Token(-1, -1, TokenKind.Empty, []);
+            if (this.curSymbol.getKind() != TokenKind.Py_Colon) {
+                left = this.parseTest();
+                if (this.curSymbol.getKind() === TokenKind.Py_As) {
+                    op2 = this.curSymbol;
+                    this.advance();
+                    if (this.curSymbol.getKind() === TokenKind.Name) {
+                        op3 = this.curSymbol;
+                        this.advance();
+                    }
+                    else {
+                        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME literal after 'as' in except statement!", this.curSymbol);
+                    }
+                }
+            } 
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op4 = this.curSymbol;
+                this.advance;
+                const suite = this.parseSuiteStmt();
+                return new ASTExceptNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, op3, op4, suite);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'except' statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'except' statement!", this.curSymbol);
     }
 
     parseSuiteStmt() : ASTNode {
