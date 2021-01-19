@@ -1109,6 +1109,21 @@ class ASTExceptNode extends ASTNode {
     }
 }
 
+class ASTSuiteNode extends ASTNode {
+    private Operator1: Token;
+    private Operator2: Token;
+    private Operator3: Token;
+    private Nodes: ASTNode[];
+
+    constructor(startPos: number, endPos: number, op1: Token, op2: Token, nodes: ASTNode[], op3: Token) {
+        super(startPos, endPos);
+        this.Operator1 = op1;
+        this.Operator2 = op2;
+        this.Operator3 = op3;
+        this.Nodes = nodes;
+    }
+}
+
 
 
 
@@ -2263,7 +2278,25 @@ class PythonCoreParser {
     }
 
     parseSuiteStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Newline) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Indent) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const nodes: ASTNode[] = [];
+                nodes.push( this.parseStmt() );
+                while (this.curSymbol.getKind() != TokenKind.Dedent) {
+                    nodes.push( this.parseStmt() );
+                }
+                const op3 = this.curSymbol;
+                this.advance();
+                return new ASTSuiteNode(startPos, this.curSymbol.getStartPosition(), op1, op2, nodes.reverse(), op3);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting indentation before block statement!", this.curSymbol);
+        }
+        return this.parseSimpleStmt();
     }
 
     parseStmt() : ASTNode {
