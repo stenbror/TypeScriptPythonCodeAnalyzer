@@ -1,5 +1,6 @@
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 import { ASTNode } from "./ast/ASTNode";
+import { ASTAtomNameNode } from "./ast/ASTAtomNameNode";
 
 
 class SyntaxErrorException extends Error {
@@ -44,15 +45,6 @@ class ASTAtomTrueNode extends ASTNode {
 }
 
 class ASTAtomElipsisNode extends ASTNode {
-    private Operator1: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-    }
-}
-
-class ASTAtomNameNode extends ASTNode {
     private Operator1: Token;
 
     constructor(startPos: number, endPos: number, operator1: Token) {
@@ -1054,7 +1046,7 @@ class PythonCoreParser {
                 return new ASTAtomElipsisNode(startPos, this.curSymbol.getStartPosition(), op1);
             case TokenKind.Name:
                 this.advance();
-                return new ASTAtomNameNode(startPos, this.curSymbol.getStartPosition(), op1);
+                return new ASTAtomNameNode(startPos, this.curSymbol.getStartPosition(), <NameLiteral>op1);
             case TokenKind.Number:
                 this.advance();
                 return new ASTAtomNumberNode(startPos, this.curSymbol.getStartPosition(), op1);
