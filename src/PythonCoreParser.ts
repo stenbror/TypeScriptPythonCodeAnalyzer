@@ -1,3 +1,4 @@
+import { ASTNode } from "./ast/ASTNode";
 
 class SyntaxErrorException extends Error {
     private Position: number;
@@ -114,15 +115,7 @@ class TypeComment extends Token {
 
 
 
-class ASTNode {
-    private startPosition: number;
-    private endPosition: number;
 
-    constructor(startPos = -1, endPos = -1) {
-        this.startPosition = startPos;
-        this.endPosition = endPos;
-    }
-}
 
 class ASTAtomNoneNode extends ASTNode {
     private Operator1: Token;
