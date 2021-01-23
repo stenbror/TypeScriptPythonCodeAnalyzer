@@ -1,10 +1,12 @@
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 import { ASTNode } from "./ast/ASTNode";
-import { ASTAtomNameNode } from "./ast/ASTAtomNameNode";
+import { ASTAtomNameNode } from "./ast/ASTAtomNameLiteral";
 import { ASTAtomNoneNode } from "./ast/ASTAtomNoneNode";
 import { ASTAtomFalseNode } from "./ast/ASTAtomFalseNode";
 import { ASTAtomTrueNode } from "./ast/ASTAtomTrueNode";
 import { ASTAtomElipsisNode } from "./ast/ASTAtomElipsisNode";
+import { ASTAtomNumberNode } from "./ast/ASTAtomNumberLiteral";
+import { ASTAtomStringNode } from "./ast/ASTAtomStringLiteral";
 
 
 class SyntaxErrorException extends Error {
@@ -16,23 +18,8 @@ class SyntaxErrorException extends Error {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-class ASTAtomNumberNode extends ASTNode {
-    private Operator1: Token;
 
-    constructor(startPos: number, endPos: number, operator1: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-    }
-}
 
-class ASTAtomStringNode extends ASTNode {
-    private Operators: Token[];
-
-    constructor(startPos: number, endPos: number, operators: Token[]) {
-        super(startPos, endPos);
-        this.Operators = operators;
-    }
-}
 
 class ASTTupleLiteral extends ASTNode {
     private Operator1: Token;
@@ -1008,7 +995,7 @@ class PythonCoreParser {
                 return new ASTAtomNameNode(startPos, this.curSymbol.getStartPosition(), <NameLiteral>op1);
             case TokenKind.Number:
                 this.advance();
-                return new ASTAtomNumberNode(startPos, this.curSymbol.getStartPosition(), op1);
+                return new ASTAtomNumberNode(startPos, this.curSymbol.getStartPosition(), <NumberLiteral>op1);
             case TokenKind.String: {
                 const nodes : StringLiteral[] = [];
                 nodes.push(<StringLiteral>this.curSymbol);
