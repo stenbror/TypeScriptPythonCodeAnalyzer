@@ -1,6 +1,7 @@
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 import { ASTNode } from "./ast/ASTNode";
 import { ASTAtomNameNode } from "./ast/ASTAtomNameNode";
+import { ASTAtomNoneNode } from "./ast/ASTAtomNoneNode";
 
 
 class SyntaxErrorException extends Error {
@@ -17,14 +18,6 @@ class SyntaxErrorException extends Error {
 
 
 
-class ASTAtomNoneNode extends ASTNode {
-    private Operator1: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-    }
-}
 
 class ASTAtomFalseNode extends ASTNode {
     private Operator1: Token;
