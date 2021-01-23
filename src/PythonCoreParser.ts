@@ -2,6 +2,9 @@ import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./T
 import { ASTNode } from "./ast/ASTNode";
 import { ASTAtomNameNode } from "./ast/ASTAtomNameNode";
 import { ASTAtomNoneNode } from "./ast/ASTAtomNoneNode";
+import { ASTAtomFalseNode } from "./ast/ASTAtomFalseNode";
+import { ASTAtomTrueNode } from "./ast/ASTAtomTrueNode";
+import { ASTAtomElipsisNode } from "./ast/ASTAtomElipsisNode";
 
 
 class SyntaxErrorException extends Error {
@@ -11,40 +14,7 @@ class SyntaxErrorException extends Error {
     }
 }
 
-
-
-
-
-
-
-
-
-class ASTAtomFalseNode extends ASTNode {
-    private Operator1: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-    }
-}
-
-class ASTAtomTrueNode extends ASTNode {
-    private Operator1: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-    }
-}
-
-class ASTAtomElipsisNode extends ASTNode {
-    private Operator1: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-    }
-}
+////////////////////////////////////////////////////////////////////////////////////////////
 
 class ASTAtomNumberNode extends ASTNode {
     private Operator1: Token;
@@ -1002,11 +972,7 @@ class ASTSuiteNode extends ASTNode {
 }
 
 
-
-
-
-
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class PythonCoreParser {
     private curSymbol: Token;
