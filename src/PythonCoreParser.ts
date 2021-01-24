@@ -43,6 +43,7 @@ import { ASTIsNotExprNode } from "./ast/ASTIsNotExprNode";
 import { ASTNotTestNode } from "./ast/ASTNotTestNode";
 import { ASTOrTestNode } from "./ast/ASTOrTestNode";
 import { ASTAndTestNode } from "./ast/ASTAndTestNode";
+import { ASTLambdaExprNode } from "./ast/ASTLambdaExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -52,21 +53,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTLambdaExpr extends ASTNode {
-    private Operator1: Token;
-    private Left : ASTNode;
-    private Operator2: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, operator1: Token, left: ASTNode, operator2: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-        this.Left = left;
-        this.Operator2 = operator2;
-        this.Right = right;
-    }
-}
 
 class ASTTestExpr extends ASTNode {
     private Left : ASTNode;
@@ -954,11 +940,11 @@ class PythonCoreParser {
             this.advance();
             if (isCond) {
                 const right = this.parseTest();
-                return new ASTLambdaExpr(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
+                return new ASTLambdaExprNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
             }
             else {
                 const right = this.parseTestNoCond();
-                return new ASTLambdaExpr(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
+                return new ASTLambdaExprNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
             }
 
         }
