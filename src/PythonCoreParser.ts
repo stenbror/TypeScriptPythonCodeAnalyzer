@@ -13,8 +13,9 @@ import { ASTAtomListLiteralNode } from "./ast/ASTAtomListLiteralNode";
 import { ASTAtomDictionaryLiteralNode } from "./ast/ASTAtomDictionaryLiteralNode";
 import { ASTAtomSetLiteralNode } from "./ast/ASTAtomSetLiteralNode";
 import { ASTAtomExprNode } from "./ast/ASTAtomExprNode";
+import { ASTPowerExprNode } from "./ast/ASTPowerExprNode";
 
-class SyntaxErrorException extends Error {
+export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
         super(text);
         Object.setPrototypeOf(this, SyntaxErrorException.prototype);
@@ -24,19 +25,6 @@ class SyntaxErrorException extends Error {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-class ASTPowerExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTUnaryPlus extends ASTNode {
     private Operator: Token;
@@ -1048,7 +1036,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseFactor();
-            return new ASTPowerExpr(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+            return new ASTPowerExprNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
         }
         return left;
     }
