@@ -7,10 +7,11 @@ import { ASTAtomTrueNode } from "./ast/ASTAtomTrueNode";
 import { ASTAtomElipsisNode } from "./ast/ASTAtomElipsisNode";
 import { ASTAtomNumberNode } from "./ast/ASTAtomNumberLiteral";
 import { ASTAtomStringNode } from "./ast/ASTAtomStringLiteral";
+import { ASTAtomTupleLiteralNode } from "./ast/ASTTupleLiteral";
 
 
 class SyntaxErrorException extends Error {
-    constructor(private Position: number, private text: string, private Token: Token) {
+    constructor(private Position: number, private text: string, private ErrorToken: Token) {
         super(text);
         Object.setPrototypeOf(this, SyntaxErrorException.prototype);
     }
@@ -21,18 +22,7 @@ class SyntaxErrorException extends Error {
 
 
 
-class ASTTupleLiteral extends ASTNode {
-    private Operator1: Token;
-    private Right: ASTNode;
-    private Operator2: Token;
 
-    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode, op2: Token) {
-        super(startPos, endPos);
-        this.Operator1 = op1;
-        this.Operator2 = op2;
-        this.Right = right;
-    }
-}
 
 class ASTListLiteral extends ASTNode {
     private Operator1: Token;
@@ -1011,14 +1001,14 @@ class PythonCoreParser {
                 if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
                     const op2 = this.curSymbol;
                     this.advance();
-                    return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
+                    return new ASTAtomTupleLiteralNode(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
                 }
                 else if (this.curSymbol.getKind() === TokenKind.Py_Yield) {
                     const right = this.parseYieldExpr();
                     if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
                         const op2 = this.curSymbol;
                         this.advance();
-                        return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                        return new ASTAtomTupleLiteralNode(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
                     }
                     else {
                         throw new SyntaxErrorException(startPos, "Missing ')' in tuple literal!", this.curSymbol);
@@ -1029,7 +1019,7 @@ class PythonCoreParser {
                     if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
                         const op2 = this.curSymbol;
                         this.advance();
-                        return new ASTTupleLiteral(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+                        return new ASTAtomTupleLiteralNode(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
                     }
                     else {
                         throw new SyntaxErrorException(startPos, "Missing ')' in tuple literal!", this.curSymbol);
