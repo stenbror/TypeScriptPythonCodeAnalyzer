@@ -24,6 +24,8 @@ import { ASTMatriceExprNode } from "./ast/ASTMatriceExprNode";
 import { ASTFloorDivExprNode } from "./ast/ASTFloorDivExprNode";
 import { ASTPlusExprNode } from "./ast/ASTPlusExprNode";
 import { ASTMinusExprNode } from "./ast/ASTMinusExprNode";
+import { ASTShiftLeftExprNode } from "./ast/ASTShiftLeftExprNode";
+import { ASTShiftRightExprNode } from "./ast/ASTShiftRightExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -33,34 +35,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-class ASTShiftLeftExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTShiftRightExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTBitAndExpr extends ASTNode {
     private Left : ASTNode;
@@ -1004,10 +978,10 @@ class PythonCoreParser {
             const right = this.parseArith();
             switch (op1.getKind()) {
                 case TokenKind.Py_ShiftLeft: 
-                    res = new ASTShiftLeftExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTShiftLeftExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 case TokenKind.Py_ShiftRight: 
-                    res = new ASTShiftRightExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTShiftRightExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
             }
         }
