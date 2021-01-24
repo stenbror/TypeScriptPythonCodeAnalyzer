@@ -12,6 +12,7 @@ import { ASTAtomTupleLiteralNode } from "./ast/ASTAtomTupleLiteralNode";
 import { ASTAtomListLiteralNode } from "./ast/ASTAtomListLiteralNode";
 import { ASTAtomDictionaryLiteralNode } from "./ast/ASTAtomDictionaryLiteralNode";
 import { ASTAtomSetLiteralNode } from "./ast/ASTAtomSetLiteralNode";
+import { ASTAtomExprNode } from "./ast/ASTAtomExprNode";
 
 class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -22,18 +23,7 @@ class SyntaxErrorException extends Error {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-class ASTAtomExpr extends ASTNode {
-    private Operator1: Token;
-    private Left: ASTNode;
-    private Nodes: ASTNode[];
 
-    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, nodes: ASTNode[]) {
-        super(startPos, endPos);
-        this.Operator1 = op1;
-        this.Left = left;
-        this.Nodes = nodes;
-    }
-}
 
 class ASTPowerExpr extends ASTNode {
     private Left : ASTNode;
@@ -1041,14 +1031,14 @@ class PythonCoreParser {
             while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
                 nodes.push( this.parseTrailer() );
             }
-            return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), op1, left, nodes.reverse());
+            return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), op1, left, nodes.reverse());
         }
         const left = this.parseAtom();
         const nodes : ASTNode[] = [];
         while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
             nodes.push( this.parseTrailer() );
         }
-        return new ASTAtomExpr(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes.reverse());
+        return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes.reverse());
     }
 
     parsePower() : ASTNode {
