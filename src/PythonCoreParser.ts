@@ -26,6 +26,9 @@ import { ASTPlusExprNode } from "./ast/ASTPlusExprNode";
 import { ASTMinusExprNode } from "./ast/ASTMinusExprNode";
 import { ASTShiftLeftExprNode } from "./ast/ASTShiftLeftExprNode";
 import { ASTShiftRightExprNode } from "./ast/ASTShiftRightExprNode";
+import { ASTBitAndExprNode } from "./ast/ASTBitAndExprNode";
+import { ASTBitXorExprNode } from "./ast/ASTBitXorExprNode";
+import { ASTBitOrExprNode } from "./ast/ASTBitOrExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -35,45 +38,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTBitAndExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTBitXorExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTBitOrExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTStarExpr extends ASTNode {
     private Operator: Token;
@@ -995,7 +959,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseShiftExpr();
-            res = new ASTBitAndExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+            res = new ASTBitAndExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
         }
         return res;
     }
@@ -1007,7 +971,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseAndExpr();
-            res = new ASTBitXorExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+            res = new ASTBitXorExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
         }
         return res;
     }
@@ -1019,7 +983,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseXorExpr();
-            res = new ASTBitOrExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+            res = new ASTBitOrExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
         }
         return res;
     }
