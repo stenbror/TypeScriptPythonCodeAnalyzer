@@ -22,6 +22,8 @@ import { ASTDivExprNode } from "./ast/ASTDivExprNode";
 import { ASTModuloExprNode } from "./ast/ASTModuloExprNode";
 import { ASTMatriceExprNode } from "./ast/ASTMatriceExprNode";
 import { ASTFloorDivExprNode } from "./ast/ASTFloorDivExprNode";
+import { ASTPlusExprNode } from "./ast/ASTPlusExprNode";
+import { ASTMinusExprNode } from "./ast/ASTMinusExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -32,31 +34,7 @@ export class SyntaxErrorException extends Error {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-class ASTPlusExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
 
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTMinusExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTShiftLeftExpr extends ASTNode {
     private Left : ASTNode;
@@ -1007,10 +985,10 @@ class PythonCoreParser {
             const right = this.parseTerm();
             switch (op1.getKind()) {
                 case TokenKind.Py_Plus: 
-                    res = new ASTPlusExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTPlusExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 case TokenKind.Py_Minus: 
-                    res = new ASTMinusExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTMinusExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
             }
         }
