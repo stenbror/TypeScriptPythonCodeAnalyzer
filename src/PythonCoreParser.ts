@@ -30,6 +30,16 @@ import { ASTBitAndExprNode } from "./ast/ASTBitAndExprNode";
 import { ASTBitXorExprNode } from "./ast/ASTBitXorExprNode";
 import { ASTBitOrExprNode } from "./ast/ASTBitOrExprNode";
 import { ASTStarExprNode } from "./ast/ASTStarExprNode";
+import { ASTLessExprNode } from "./ast/ASTLessExprNode";
+import { ASTLessEqualExprNode } from "./ast/ASTLessEqualExprNode";
+import { ASTGreaterExprNode } from "./ast/ASTGreaterExprNode";
+import { ASTGreaterEqualExprNode } from "./ast/ASTGreaterEqualExprNode";
+import { ASTEqualExprNode } from "./ast/ASTEqualExprNode";
+import { ASTNotEqualExprNode } from "./ast/ASTNotEqualExprNode";
+import { ASTInExprNode } from "./ast/ASTInExprNode";
+import { ASTNotInExprNode } from "./ast/ASTNotInExprNode";
+import { ASTIsExprNode } from "./ast/ASTIsExprNode";
+import { ASTIsNotExprNode } from "./ast/ASTIsNotExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -39,140 +49,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTLessExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTLessEqualExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTGreaterExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTGreaterEqualExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTNotEqualExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTEqualExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTInExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTNotInExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator1: Token;
-    private Operator2: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator1: Token, operator2: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator1 = operator1;
-        this.Operator2 = operator2;
-        this.Right = right;
-    }
-}
-
-class ASTIsNotExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator1: Token;
-    private Operator2: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator1: Token, operator2: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator1 = operator1;
-        this.Operator2 = operator2;
-        this.Right = right;
-    }
-}
-
-class ASTIsExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTNotTest extends ASTNode {
     private Operator: Token;
@@ -998,37 +874,37 @@ class PythonCoreParser {
             switch (op1.getKind()) {
                 case TokenKind.Py_Less: {
                     const right = this.parseOrExpr();
-                    res = new ASTLessExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTLessExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_LessEqual: {
                     const right = this.parseOrExpr();
-                    res = new ASTLessEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTLessEqualExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_Equal: {
                     const right = this.parseOrExpr();
-                    res = new ASTEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTEqualExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_GreaterEqual: {
                     const right = this.parseOrExpr();
-                    res = new ASTGreaterEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTGreaterEqualExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_Greater: {
                     const right = this.parseOrExpr();
-                    res = new ASTGreaterExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTGreaterExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_NotEqual: {
                     const right = this.parseOrExpr();
-                    res = new ASTNotEqualExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTNotEqualExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_In: {
                     const right = this.parseOrExpr();
-                    res = new ASTInExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                    res = new ASTInExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     break;
                 }
                 case TokenKind.Py_Is: {
@@ -1036,11 +912,11 @@ class PythonCoreParser {
                         const op2 = this.curSymbol;
                         this.advance();
                         const right = this.parseOrExpr();
-                        res = new ASTIsNotExpr(startPos, this.curSymbol.getStartPosition(), res, op1, op2, right);
+                        res = new ASTIsNotExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, op2, right);
                     }
                     else {
                         const right = this.parseOrExpr();
-                        res = new ASTIsExpr(startPos, this.curSymbol.getStartPosition(), res, op1, right);
+                        res = new ASTIsExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, right);
                     }
                     break;
                 }
@@ -1049,7 +925,7 @@ class PythonCoreParser {
                         const op2 = this.curSymbol;
                         this.advance();
                         const right = this.parseOrExpr();
-                        res = new ASTNotInExpr(startPos, this.curSymbol.getStartPosition(), res, op1, op2, right);
+                        res = new ASTNotInExprNode(startPos, this.curSymbol.getStartPosition(), res, op1, op2, right);
                     }
                     else {
                         throw new SyntaxErrorException(startPos, "Missing 'in' in 'not in' expression!", this.curSymbol);
