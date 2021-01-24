@@ -44,6 +44,7 @@ import { ASTNotTestNode } from "./ast/ASTNotTestNode";
 import { ASTOrTestNode } from "./ast/ASTOrTestNode";
 import { ASTAndTestNode } from "./ast/ASTAndTestNode";
 import { ASTLambdaExprNode } from "./ast/ASTLambdaExprNode";
+import { ASTNamedExprNode } from "./ast/ASTNamedExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -71,18 +72,7 @@ class ASTTestExpr extends ASTNode {
     }
 }
 
-class ASTNamedExpr extends ASTNode {
-    private Left : ASTNode;
-    private Operator: Token;
-    private Right: ASTNode;
 
-    constructor(startPos: number, endPos: number, left: ASTNode, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTTestListComp extends ASTNode {
     private Nodes : ASTNode[];
@@ -986,7 +976,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseTest();
-            return new ASTNamedExpr(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+            return new ASTNamedExprNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
         }
         return left;
     }
