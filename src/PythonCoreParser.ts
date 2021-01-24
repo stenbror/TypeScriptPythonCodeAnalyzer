@@ -29,6 +29,7 @@ import { ASTShiftRightExprNode } from "./ast/ASTShiftRightExprNode";
 import { ASTBitAndExprNode } from "./ast/ASTBitAndExprNode";
 import { ASTBitXorExprNode } from "./ast/ASTBitXorExprNode";
 import { ASTBitOrExprNode } from "./ast/ASTBitOrExprNode";
+import { ASTStarExprNode } from "./ast/ASTStarExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -38,17 +39,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTStarExpr extends ASTNode {
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTLessExpr extends ASTNode {
     private Left : ASTNode;
@@ -994,7 +984,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseOrExpr();
-            return new ASTStarExpr(startPos, this.curSymbol.getStartPosition(), op1, right);
+            return new ASTStarExprNode(startPos, this.curSymbol.getStartPosition(), op1, right);
         }
         throw new SyntaxErrorException(startPos, "Missing '*' in star expression!", this.curSymbol);
     }
