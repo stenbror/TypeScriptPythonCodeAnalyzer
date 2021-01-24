@@ -14,6 +14,9 @@ import { ASTAtomDictionaryLiteralNode } from "./ast/ASTAtomDictionaryLiteralNode
 import { ASTAtomSetLiteralNode } from "./ast/ASTAtomSetLiteralNode";
 import { ASTAtomExprNode } from "./ast/ASTAtomExprNode";
 import { ASTPowerExprNode } from "./ast/ASTPowerExprNode";
+import { ASTUnaryPlusNode } from "./ast/ASTUnaryPlusNode";
+import { ASTUnaryMinusNode } from "./ast/ASTUnaryMinusNode";
+import { ASTUnaryBitInvertNode } from "./ast/ASTUnaryBitInvertNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -25,39 +28,6 @@ export class SyntaxErrorException extends Error {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-class ASTUnaryPlus extends ASTNode {
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTUnaryMinus extends ASTNode {
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
-
-class ASTUnaryBitInvert extends ASTNode {
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, operator: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator = operator;
-        this.Right = right;
-    }
-}
 
 class ASTMulExpr extends ASTNode {
     private Left : ASTNode;
@@ -1047,15 +1017,15 @@ class PythonCoreParser {
         switch (op1.getKind()) {
             case TokenKind.Py_Plus: {
                 const right = this.parseFactor();
-                return new ASTUnaryPlus(startPos, this.curSymbol.getStartPosition(), op1, right);
+                return new ASTUnaryPlusNode(startPos, this.curSymbol.getStartPosition(), op1, right);
             }
             case TokenKind.Py_Minus: {
                 const right = this.parseFactor();
-                return new ASTUnaryMinus(startPos, this.curSymbol.getStartPosition(), op1, right);
+                return new ASTUnaryMinusNode(startPos, this.curSymbol.getStartPosition(), op1, right);
             }
             case TokenKind.Py_BitInvert: {
                 const right = this.parseFactor();
-                return new ASTUnaryBitInvert(startPos, this.curSymbol.getStartPosition(), op1, right);
+                return new ASTUnaryBitInvertNode(startPos, this.curSymbol.getStartPosition(), op1, right);
             }
             default:
                 return this.parsePower();
