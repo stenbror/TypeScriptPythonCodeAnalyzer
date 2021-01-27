@@ -48,6 +48,7 @@ import { ASTTestNode } from "./ast/ASTTestNode";
 import { ASTNamedExprNode } from "./ast/ASTNamedExprNode";
 import { ASTTestListCompNode } from "./ast/ASTTestListCompNode";
 import { ASTDotNameNode } from "./ast/ASTDotNameNode";
+import { ASTCallNode } from "./ast/ASTCallNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -57,19 +58,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTCallNode extends ASTNode {
-    private Operator1: Token;
-    private Right: ASTNode;
-    private Operator2: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token, right : ASTNode, operator2: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-        this.Right = right;
-        this.Operator2 = operator2;
-    }
-}
 
 class ASTIndexNode extends ASTNode {
     private Operator1: Token;
