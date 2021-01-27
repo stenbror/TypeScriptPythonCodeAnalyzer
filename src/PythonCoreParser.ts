@@ -47,6 +47,7 @@ import { ASTLambdaExprNode } from "./ast/ASTLambdaExprNode";
 import { ASTTestNode } from "./ast/ASTTestNode";
 import { ASTNamedExprNode } from "./ast/ASTNamedExprNode";
 import { ASTTestListCompNode } from "./ast/ASTTestListCompNode";
+import { ASTDotNameNode } from "./ast/ASTDotNameNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -56,17 +57,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTDotName extends ASTNode {
-    private Operator1: Token;
-    private Operator2: Token;
-
-    constructor(startPos: number, endPos: number, operator1: Token, operator2: Token) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-        this.Operator2 = operator2;
-    }
-}
 
 class ASTCallNode extends ASTNode {
     private Operator1: Token;
@@ -999,7 +989,7 @@ class PythonCoreParser {
                 }
                 const op2 = this.curSymbol;
                 this.advance();
-                return new ASTDotName(startPos, this.curSymbol.getStartPosition(), op1, op2);
+                return new ASTDotNameNode(startPos, this.curSymbol.getStartPosition(), op1, op2);
             }
             case TokenKind.Py_LeftParen: {
                 const op1 = this.curSymbol;
