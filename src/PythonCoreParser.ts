@@ -51,6 +51,7 @@ import { ASTDotNameNode } from "./ast/ASTDotNameNode";
 import { ASTCallNode } from "./ast/ASTCallNode";
 import { ASTIndexNode } from "./ast/ASTIndexNode";
 import { ASTSubscriptListNode } from "./ast/ASTSubscriptListNode";
+import { ASTSubscriptNode } from "./ast/ASTSubscriptNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -60,23 +61,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTSubscriptNode extends ASTNode {
-    private From: ASTNode;
-    private Operator1: Token;
-    private To: ASTNode;
-    private Operator2: Token;
-    private Step: ASTNode;
-
-    constructor(startPos: number, endPos: number, one: ASTNode, op1: Token, two: ASTNode, op2: Token, three: ASTNode) {
-        super(startPos, endPos);
-        this.From = one;
-        this.Operator1 = op1;
-        this.To = two;
-        this.Operator2 = op2;
-        this.Step = three;
-    }
-}
 
 class ASTExprListNode extends ASTNode {
     private Nodes : ASTNode[];
