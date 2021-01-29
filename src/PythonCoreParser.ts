@@ -55,6 +55,7 @@ import { ASTSubscriptNode } from "./ast/ASTSubscriptNode";
 import { ASTExprListNode } from "./ast/ASTExprListNode";
 import { ASTTestListNode } from "./ast/ASTTestListNode";
 import { ASTCompForNode } from "./ast/ASTCompForNode";
+import { ASTSyncCompForNode } from "./ast/ASTSyncCompForNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -64,23 +65,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTSyncCompForNode extends ASTNode {
-    private Operator1: Token;
-    private Left: ASTNode;
-    private Operator2: Token;
-    private Right: ASTNode;
-    private Next: ASTNode;
-
-    constructor(startPos: number, endPos: number, operator1: Token, left : ASTNode, operator2: Token, right: ASTNode, next: ASTNode) {
-        super(startPos, endPos);
-        this.Operator1 = operator1;
-        this.Left = left;
-        this.Operator2 = operator2;
-        this.Right = right;
-        this.Next = next;
-    }
-}
 
 class ASTCompIfNode extends ASTNode {
     private Operator1: Token;
