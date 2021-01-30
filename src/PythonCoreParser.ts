@@ -59,6 +59,7 @@ import { ASTSyncCompForNode } from "./ast/ASTSyncCompForNode";
 import { ASTCompIfNode } from "./ast/ASTCompIfNode";
 import { ASTYieldFromNode } from "./ast/ASTYieldFromNode";
 import { ASTYieldNode } from "./ast/ASTYieldNode";
+import { ASTArgListNode } from "./ast/ASTArgListNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -68,17 +69,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTArgListNode extends ASTNode {
-    private Nodes : ASTNode[];
-    private Commas: Token[];
-    
-    constructor(startPos: number, endPos: number, nodes: ASTNode[], commas: Token[]) {
-        super(startPos, endPos);
-        this.Nodes = nodes;
-        this.Commas = commas;
-    }
-}
 
 class ASTArgumentNode extends ASTNode {
     private Left : ASTNode;
