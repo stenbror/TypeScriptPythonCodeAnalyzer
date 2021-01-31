@@ -65,6 +65,8 @@ import { ASTDictionaryContainerNode } from "./ast/ASTDictionaryContainerNode";
 import { ASTSetContainerNode } from "./ast/ASTSetContainerNode";
 import { ASTSetNameNode } from "./ast/ASTSetNameNode";
 import { ASTDictionaryNameNode } from "./ast/ASTDictionaryNameNode";
+import { ASTAsyncNode } from "./ast/ASTAsyncNode";
+import { ASTClassNode } from "./ast/ASTClassNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -74,38 +76,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTAsyncNode extends ASTNode {
-    private Operator: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, op1: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator = op1;
-        this.Right = right;
-    }
-}
-
-class ASTClassNode extends ASTNode {
-    private Operator1: Token;
-    private Operator2: Token;
-    private Operator3: Token;
-    private Operator4: Token;
-    private Operator5: Token;
-    private Left: ASTNode;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, op1: Token, op2: Token, op3: Token, left: ASTNode, op4: Token, op5: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Operator1 = op1;
-        this.Operator2 = op1;
-        this.Operator3 = op1;
-        this.Operator4 = op1;
-        this.Operator5 = op1;
-        this.Left = left;
-        this.Right = right;
-    }
-}
 
 class ASTIfNode extends ASTNode {
     private Operator1: Token;
