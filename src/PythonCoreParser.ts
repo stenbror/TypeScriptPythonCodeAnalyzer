@@ -76,6 +76,7 @@ import { ASTTryNode } from "./ast/ASTTryNode";
 import { ASTWithNode } from "./ast/ASTWithNode";
 import { ASTWithItemNode } from "./ast/ASTWithItemNode";
 import { ASTExceptNode } from "./ast/ASTExceptNode";
+import { ASTSuiteNode } from "./ast/ASTSuiteNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -83,26 +84,6 @@ export class SyntaxErrorException extends Error {
         Object.setPrototypeOf(this, SyntaxErrorException.prototype);
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTSuiteNode extends ASTNode {
-    private Operator1: Token;
-    private Operator2: Token;
-    private Operator3: Token;
-    private Nodes: ASTNode[];
-
-    constructor(startPos: number, endPos: number, op1: Token, op2: Token, nodes: ASTNode[], op3: Token) {
-        super(startPos, endPos);
-        this.Operator1 = op1;
-        this.Operator2 = op2;
-        this.Operator3 = op3;
-        this.Nodes = nodes;
-    }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class PythonCoreParser {
     private curSymbol: Token;
