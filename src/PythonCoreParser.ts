@@ -62,6 +62,7 @@ import { ASTYieldNode } from "./ast/ASTYieldNode";
 import { ASTArgListNode } from "./ast/ASTArgListNode";
 import { ASTArgumentNode } from "./ast/ASTArgumentNode";
 import { ASTDictionaryContainerNode } from "./ast/ASTDictionaryContainerNode";
+import { ASTSetContainerNode } from "./ast/ASTSetContainerNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -71,17 +72,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTSetContainerNode extends ASTNode {
-    private Keys: ASTNode[];
-    private Separators: Token[];
-
-    constructor(startPos: number, endPos: number, keys: ASTNode[], separators: Token[]) {
-        super(startPos, endPos);
-        this.Keys = keys;
-        this.Separators = separators;
-    }
-}
 
 class ASTSetNameNode extends ASTNode {
     private Operator: Token;
