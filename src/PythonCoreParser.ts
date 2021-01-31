@@ -67,6 +67,7 @@ import { ASTSetNameNode } from "./ast/ASTSetNameNode";
 import { ASTDictionaryNameNode } from "./ast/ASTDictionaryNameNode";
 import { ASTAsyncNode } from "./ast/ASTAsyncNode";
 import { ASTClassNode } from "./ast/ASTClassNode";
+import { ASTIfNode } from "./ast/ASTIfNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -76,25 +77,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTIfNode extends ASTNode {
-    private Operator1: Token;
-    private Left: ASTNode;
-    private Operator2: Token;
-    private Right: ASTNode;
-    private ElifNodes: ASTNode[];
-    private ElseNode: ASTNode;
-
-    constructor(startPos: number, endPos: number, op1: Token, left: ASTNode, op2: Token, right: ASTNode, elifNodes: ASTNode[], elseNode: ASTNode) {
-        super(startPos, endPos);
-        this.Operator1 = op1;
-        this.Left = left;
-        this.Operator2 = op2;
-        this.Right = right;
-        this.ElifNodes = elifNodes;
-        this.ElseNode = elseNode;
-    }
-}
 
 class ASTElifNode extends ASTNode {
     private Operator1: Token;
