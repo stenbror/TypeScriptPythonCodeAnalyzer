@@ -17,7 +17,7 @@ export class Trivia {
 
 export enum TokenKind {
     Empty, EOF, Newline, Indent, Dedent, Py_False, Py_None, Py_True, Py_And, Py_As, Py_Assert, 
-    Py_Async, Py_Await, Py_Break, Py_Class, Py_Continue, Py_Def, PyDel, Py_Elif, Py_Else, Py_Except, 
+    Py_Async, Py_Await, Py_Break, Py_Class, Py_Continue, Py_Def, Py_Del, Py_Elif, Py_Else, Py_Except, 
     Py_Finally, Py_For, Py_From, Py_Global, Py_If, Py_Import, Py_In, Py_Is, Py_Lambda, Py_Nonlocal,
     Py_Not, Py_Or, Py_Pass, Py_Raise, Py_Return, Py_Try, Py_While, Py_With, Py_Yield, Py_Plus, Py_Minus, 
     Py_Mul, Py_Power, Py_Div, Py_FloorDiv, Py_Modulo, Py_Matrice, Py_ShiftLeft, Py_ShiftRight, Py_BitAnd,

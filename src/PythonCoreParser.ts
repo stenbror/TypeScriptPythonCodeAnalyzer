@@ -1289,7 +1289,25 @@ class PythonCoreParser {
 
     parseSmallStmt() : ASTNode {
         switch (this.curSymbol.getKind()) {
-            
+            case TokenKind.Py_Del:
+                return this.parseDelStmt();
+            case TokenKind.Py_Pass:
+                return this.parsePassStmt();
+            case TokenKind.Py_Break:
+            case TokenKind.Py_Continue:
+            case TokenKind.Py_Return:
+            case TokenKind.Py_Raise:
+            case TokenKind.Py_Yield:
+                return this.parseFlowStmt();
+            case TokenKind.Py_Import:
+            case TokenKind.Py_From:
+                return this.parseImportStmt();
+            case TokenKind.Py_Global:
+                return this.parseGlobalStmt();
+            case TokenKind.Py_Nonlocal:
+                return this.parseNonlocalStmt();
+            case TokenKind.Py_Assert:
+                return this.parseAssertStmt();
             default:
                 return this.parseExprStmt();
         }
