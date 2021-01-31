@@ -74,6 +74,7 @@ import { ASTWhileNode } from "./ast/ASTWhileNode";
 import { ASTForNode } from "./ast/ASTForNode";
 import { ASTTryNode } from "./ast/ASTTryNode";
 import { ASTWithNode } from "./ast/ASTWithNode";
+import { ASTWithItemNode } from "./ast/ASTWithItemNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -83,19 +84,6 @@ export class SyntaxErrorException extends Error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-
-class ASTWithItemNode extends ASTNode {
-    private Left: ASTNode;
-    private Operator1: Token;
-    private Right: ASTNode;
-
-    constructor(startPos: number, endPos: number, left: ASTNode, op1: Token, right: ASTNode) {
-        super(startPos, endPos);
-        this.Left = left;
-        this.Operator1 = op1;
-        this.Right = right;
-    }
-}
 
 class ASTExceptNode extends ASTNode {
     private Operator1: Token;
