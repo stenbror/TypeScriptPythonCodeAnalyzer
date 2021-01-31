@@ -78,6 +78,19 @@ import { ASTWithItemNode } from "./ast/ASTWithItemNode";
 import { ASTExceptNode } from "./ast/ASTExceptNode";
 import { ASTSuiteNode } from "./ast/ASTSuiteNode";
 import { ASTSimpleStmtNode } from "./ast/ASTSimpleStmtNode";
+import { ASTExprPlusAssignNode } from "./ast/ASTExprPlusAssignNode";
+import { ASTExprMinusAssignNode } from "./ast/ASTExprMinusAssignNode";
+import { ASTExprMulAssignNode } from "./ast/ASTExprMulAssignNode";
+import { ASTExprDivAssignNode } from "./ast/ASTExprDivAssignNode";
+import { ASTExprMatriceAssignNode } from "./ast/ASTExprMatriceAssignNode";
+import { ASTExprModuloAssignNode } from "./ast/ASTExprModuloAssignNode";
+import { ASTExprFloorDivAssignNode } from "./ast/ASTExprFloorDivAssignNode";
+import { ASTExprPowerAssignNode } from "./ast/ASTExprPowerAssignNode";
+import { ASTExprBitAndAssignNode } from "./ast/ASTExprBitAndAssignNode";
+import { ASTExprBitOrAssignNode } from "./ast/ASTExprBitOrAssignNode";
+import { ASTExprBitXorAssignNode } from "./ast/ASTExprBitXorAssignNode";
+import { ASTExprBitShiftLeftAssignNode } from "./ast/ASTExprBitShiftLeftAssignNode";
+import { ASTExprBitShiftRightAssignNode } from "./ast/ASTExprBitShiftRightAssignNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1314,7 +1327,90 @@ class PythonCoreParser {
     }
 
     parseExprStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const left = this.parseTestListStarExprStmt();
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_PlusAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprPlusAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_MinusAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprMinusAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_MulAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprMulAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_DivAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprDivAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_MatriceAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprMatriceAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_ModuloAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprModuloAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_PowerAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprPowerAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_FloorDivAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprFloorDivAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_BitAndAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprBitAndAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_BitOrAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprBitOrAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_BitXorAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprBitXorAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_ShiftLeftAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprBitShiftLeftAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            case TokenKind.Py_ShiftRightAssign: {
+                const op1 = this.curSymbol;
+                this.advance();
+                const right = this.curSymbol.getKind() === TokenKind.Py_Yield ? this.parseYieldExpr() : this.parseTestList();
+                return new ASTExprBitShiftRightAssignNode(startPos, this.curSymbol.getEndPosition(), left, op1, right);
+            }
+            default:
+                return left;
+        }
     }
 
     parseAnnAssignStmt() : ASTNode {
