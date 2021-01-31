@@ -77,6 +77,7 @@ import { ASTWithNode } from "./ast/ASTWithNode";
 import { ASTWithItemNode } from "./ast/ASTWithItemNode";
 import { ASTExceptNode } from "./ast/ASTExceptNode";
 import { ASTSuiteNode } from "./ast/ASTSuiteNode";
+import { ASTSimpleStmtNode } from "./ast/ASTSimpleStmtNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1271,11 +1272,27 @@ class PythonCoreParser {
     }
 
     parseSimpleStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const separators: Token[] = [];
+        nodes.push( this.parseSmallStmt() );
+        while (this.curSymbol.getKind() === TokenKind.Py_SemiColon) {
+            separators.push( this.curSymbol );
+            this.advance();
+            nodes.push( this.parseSmallStmt() );
+        }
+        if (this.curSymbol.getKind() !== TokenKind.Newline) throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting <NEWLINE> after simple statement(s)!", this.curSymbol);
+        const op1 = this.curSymbol;
+        this.advance();
+        return new ASTSimpleStmtNode(startPos, this.curSymbol.getEndPosition(), nodes.reverse(), separators.reverse(), op1);
     }
 
     parseSmallStmt() : ASTNode {
-        return new ASTNode();
+        switch (this.curSymbol.getKind()) {
+            
+            default:
+                return this.parseExprStmt();
+        }
     }
 
     parseExprStmt() : ASTNode {
