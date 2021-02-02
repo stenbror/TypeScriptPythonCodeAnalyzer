@@ -97,6 +97,8 @@ import { ASTAssignNode } from "./ast/ASTAssignNode";
 import { ASTTestListStarExprNode } from "./ast/ASTTestListStarExprNode";
 import { ASTDelNode } from "./ast/ASTDelNode";
 import { ASTPassNode } from "./ast/ASTPassNode";
+import { ASTBreakNode } from "./ast/ASTBreakNode";
+import { ASTContinueNode } from "./ast/ASTContinueNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -107,9 +109,11 @@ export class SyntaxErrorException extends Error {
 
 class PythonCoreParser {
     private curSymbol: Token;
+    private flowLevel: number;
 
     constructor() {
         this.curSymbol = new Token(-1, -1, TokenKind.Empty, []);
+        this.flowLevel = 0;
     }
 
     advance() {
@@ -1525,15 +1529,43 @@ class PythonCoreParser {
     }
 
     parseFlowStmt() : ASTNode {
-        return new ASTNode();
+        if (this.flowLevel > 0) {
+            switch (this.curSymbol.getKind()) {
+                case TokenKind.Py_Break:
+                    return this.parseBreakStmt();
+                case TokenKind.Py_Continue:
+                    return this.parseContinueStmt();
+                case TokenKind.Py_Return:
+                    return this.parseReturnStmt();
+                case TokenKind.Py_Raise:
+                    return this.parseRaiseStmt();
+                case TokenKind.Py_Yield:
+                    return this.parseYieldExpr();
+                default:
+                    break;
+            }
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting flow statement inside looping or function statement!", this.curSymbol);
     }
 
     parseBreakStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Break) {
+            const op1 = this.curSymbol;
+            this.advance();
+            return new ASTBreakNode(startPos, this.curSymbol.getStartPosition(), op1);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'break' in break statement!", this.curSymbol);
     }
 
     parseContinueStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Continue) {
+            const op1 = this.curSymbol;
+            this.advance();
+            return new ASTContinueNode(startPos, this.curSymbol.getStartPosition(), op1);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'continue' in continue statement!", this.curSymbol);
     }
 
     parseReturnStmt() : ASTNode {
