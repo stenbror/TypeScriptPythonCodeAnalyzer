@@ -99,6 +99,8 @@ import { ASTDelNode } from "./ast/ASTDelNode";
 import { ASTPassNode } from "./ast/ASTPassNode";
 import { ASTBreakNode } from "./ast/ASTBreakNode";
 import { ASTContinueNode } from "./ast/ASTContinueNode";
+import { ASTReturnNode } from "./ast/ASTReturnNode";
+import { ASTRaiseNode } from "./ast/ASTRaiseNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1569,15 +1571,41 @@ class PythonCoreParser {
     }
 
     parseReturnStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Return) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() in [ TokenKind.Newline, TokenKind.Py_SemiColon ]) {
+                return new ASTReturnNode(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(-1, -1));
+            }
+            const right = this.parseTestListStarExprStmt();
+            return new ASTReturnNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'return' in return statement!", this.curSymbol);
     }
 
     parseYieldStmt() : ASTNode {
-        return new ASTNode();
+        return this.parseYieldExpr();
     }
 
     parseRaiseStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Raise) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() in [ TokenKind.Newline, TokenKind.Py_SemiColon ]) {
+                return new ASTRaiseNode(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(-1, -1), new Token(-1, -1, TokenKind.Empty, []), new ASTNode(-1, -1) );
+            }
+            const left = this.parseTest();
+            if (this.curSymbol.getKind() === TokenKind.Py_From) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseTest();
+                return new ASTRaiseNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right );
+            }
+            return new ASTRaiseNode(startPos, this.curSymbol.getStartPosition(), op1, left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode(-1, -1) );
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'raise' in raise statement!", this.curSymbol);
     }
 
     parseImportStmt() : ASTNode {
