@@ -94,6 +94,7 @@ import { ASTExprBitShiftRightAssignNode } from "./ast/ASTExprBitShiftRightAssign
 import { ASTAnnAssignNode } from "./ast/ASTAnnAssignNode";
 import { ASTAnnotatedNode } from "./ast/ASTAnnotatedNode";
 import { ASTAssignNode } from "./ast/ASTAssignNode";
+import { ASTTestListStarExprNode } from "./ast/ASTTestListStarExprNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1465,7 +1466,39 @@ class PythonCoreParser {
     }
 
     parseTestListStarExprStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const separators: Token[] = [];
+        nodes.push( this.curSymbol.getKind() === TokenKind.Py_Mul ? this.parseStarExpr() : this.parseTest() );
+        while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            separators.push( this.curSymbol );
+            this.advance();
+            switch (this.curSymbol.getKind()) {
+                case TokenKind.Newline:
+                case TokenKind.Py_SemiColon:
+                case TokenKind.Py_PlusAssign:
+                case TokenKind.Py_MinusAssign:
+                case TokenKind.Py_MulAssign:
+                case TokenKind.Py_DivAssign:
+                case TokenKind.Py_ModuloAssign:
+                case TokenKind.Py_MatriceAssign:
+                case TokenKind.Py_FloorDivAssign:
+                case TokenKind.Py_BitAndAssign:
+                case TokenKind.Py_BitOrAssign:
+                case TokenKind.Py_BitXorAssign:
+                case TokenKind.Py_ShiftLeftAssign:
+                case TokenKind.Py_ShiftRightAssign:
+                case TokenKind.Py_Colon:
+                case TokenKind.Py_Assign:
+                    break;
+                case TokenKind.Py_Comma:
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting element before ',' in testlist statement!", this.curSymbol);
+                default:
+                    nodes.push( this.curSymbol.getKind() === TokenKind.Py_Mul ? this.parseStarExpr() : this.parseTest() );
+                    break;
+            }
+        }
+        return new ASTTestListStarExprNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
     }
 
     parseDelStmt() : ASTNode {
