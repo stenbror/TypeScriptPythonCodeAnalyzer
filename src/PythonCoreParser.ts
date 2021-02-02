@@ -93,6 +93,7 @@ import { ASTExprBitShiftLeftAssignNode } from "./ast/ASTExprBitShiftLeftAssignNo
 import { ASTExprBitShiftRightAssignNode } from "./ast/ASTExprBitShiftRightAssignNode";
 import { ASTAnnAssignNode } from "./ast/ASTAnnAssignNode";
 import { ASTAnnotatedNode } from "./ast/ASTAnnotatedNode";
+import { ASTAssignNode } from "./ast/ASTAssignNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1428,8 +1429,24 @@ class PythonCoreParser {
             }
             case TokenKind.Py_Assign:
                 {
-
-                    return new ASTNode();
+                    const operators: Token[] = [];
+                    const nodes: ASTNode[] = [];
+                    while (this.curSymbol.getKind() === TokenKind.Py_Assign) {
+                        operators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Yield) {
+                            nodes.push( this.parseYieldExpr() );
+                        }
+                        else {
+                            nodes.push( this.parseTestListStarExprStmt() );
+                        }
+                    }
+                    if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                        const tc = this.curSymbol;
+                        this.advance();
+                        return new ASTAssignNode(startPos, this.curSymbol.getStartPosition(), left, operators.reverse(), nodes.reverse(), tc);
+                    }
+                    return new ASTAssignNode(startPos, this.curSymbol.getStartPosition(), left, operators.reverse(), nodes.reverse(), new Token(-1, -1, TokenKind.Empty, []));
                 }
             default:
                 return left;
