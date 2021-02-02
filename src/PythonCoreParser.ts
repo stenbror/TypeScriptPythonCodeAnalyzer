@@ -96,6 +96,7 @@ import { ASTAnnotatedNode } from "./ast/ASTAnnotatedNode";
 import { ASTAssignNode } from "./ast/ASTAssignNode";
 import { ASTTestListStarExprNode } from "./ast/ASTTestListStarExprNode";
 import { ASTDelNode } from "./ast/ASTDelNode";
+import { ASTPassNode } from "./ast/ASTPassNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1514,7 +1515,13 @@ class PythonCoreParser {
     }
 
     parsePassStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Pass) {
+            const op1 = this.curSymbol;
+            this.advance();
+            return new ASTPassNode(startPos, this.curSymbol.getStartPosition(), op1);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'pass' in pass statement!", this.curSymbol);
     }
 
     parseFlowStmt() : ASTNode {
