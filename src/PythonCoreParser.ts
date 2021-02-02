@@ -92,6 +92,7 @@ import { ASTExprBitXorAssignNode } from "./ast/ASTExprBitXorAssignNode";
 import { ASTExprBitShiftLeftAssignNode } from "./ast/ASTExprBitShiftLeftAssignNode";
 import { ASTExprBitShiftRightAssignNode } from "./ast/ASTExprBitShiftRightAssignNode";
 import { ASTAnnAssignNode } from "./ast/ASTAnnAssignNode";
+import { ASTAnnotatedNode } from "./ast/ASTAnnotatedNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1436,7 +1437,14 @@ class PythonCoreParser {
     }
 
     parseAnnAssignStmt() : ASTNode {
-        return new ASTNode();
+        if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+            const startPos = this.curSymbol.getStartPosition();
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseTest();
+            return new ASTAnnotatedNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in annotated statement!", this.curSymbol);
     }
 
     parseTestListStarExprStmt() : ASTNode {
