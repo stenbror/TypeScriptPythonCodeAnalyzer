@@ -95,6 +95,7 @@ import { ASTAnnAssignNode } from "./ast/ASTAnnAssignNode";
 import { ASTAnnotatedNode } from "./ast/ASTAnnotatedNode";
 import { ASTAssignNode } from "./ast/ASTAssignNode";
 import { ASTTestListStarExprNode } from "./ast/ASTTestListStarExprNode";
+import { ASTDelNode } from "./ast/ASTDelNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1502,7 +1503,14 @@ class PythonCoreParser {
     }
 
     parseDelStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Del) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseExprList();
+            return new ASTDelNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'del' in del statement!", this.curSymbol);
     }
 
     parsePassStmt() : ASTNode {
