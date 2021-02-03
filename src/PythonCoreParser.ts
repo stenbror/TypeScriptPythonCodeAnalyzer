@@ -157,7 +157,7 @@ class PythonCoreParser {
                     nodes.push(<StringLiteral>this.curSymbol);
                     this.advance();
                 }
-                return new ASTAtomStringNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse());
+                return new ASTAtomStringNode(startPos, this.curSymbol.getStartPosition(), nodes);
             }
             case TokenKind.Py_LeftParen: {
                 this.advance();
@@ -245,14 +245,14 @@ class PythonCoreParser {
             while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
                 nodes.push( this.parseTrailer() );
             }
-            return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), op1, left, nodes.reverse());
+            return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), op1, left, nodes);
         }
         const left = this.parseAtom();
         const nodes : ASTNode[] = [];
         while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
             nodes.push( this.parseTrailer() );
         }
-        return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes.reverse());
+        return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes);
     }
 
     parsePower() : ASTNode {
@@ -607,7 +607,7 @@ class PythonCoreParser {
                 }
             }
         }
-        return new ASTTestListCompNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), commas.reverse());
+        return new ASTTestListCompNode(startPos, this.curSymbol.getStartPosition(), nodes, commas);
     }
 
     parseTrailer() : ASTNode {
@@ -667,7 +667,7 @@ class PythonCoreParser {
             if (this.curSymbol.getKind() === TokenKind.Py_RightBracket) break;
             nodes.push( this.parseSubscript() );
         }
-        return new ASTSubscriptListNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
+        return new ASTSubscriptListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
     parseSubscript() : ASTNode {
@@ -712,7 +712,7 @@ class PythonCoreParser {
                 nodes.push( this.parseOrExpr() );
             }
         }
-        return new ASTExprListNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
+        return new ASTExprListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
     parseTestList() : ASTNode {
@@ -731,7 +731,7 @@ class PythonCoreParser {
                     nodes.push( this.parseTest() );
             }
         }
-        return new ASTTestListNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
+        return new ASTTestListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
     parseDictorSetMaker() : ASTNode {
@@ -808,9 +808,9 @@ class PythonCoreParser {
             }
         }
         if (isDict) {
-            return new ASTDictionaryContainerNode(startPos, this.curSymbol.getStartPosition(), keys.reverse(), colons.reverse(), values.reverse(), separators.reverse());
+            return new ASTDictionaryContainerNode(startPos, this.curSymbol.getStartPosition(), keys, colons, values, separators);
         }
-        return new ASTSetContainerNode(startPos, this.curSymbol.getStartPosition(), keys.reverse(), separators.reverse());
+        return new ASTSetContainerNode(startPos, this.curSymbol.getStartPosition(), keys, separators);
     }
 
     parseCompIter() : ASTNode {
@@ -909,7 +909,7 @@ class PythonCoreParser {
             if (this.curSymbol.getKind() === TokenKind.Py_RightParen) break;
             nodes.push( this.parseSubscript() );
         }
-        return new ASTArgListNode(startPos, this.curSymbol.getStartPosition(),nodes.reverse(), separators.reverse());
+        return new ASTArgListNode(startPos, this.curSymbol.getStartPosition(),nodes, separators);
     }
 
     parseArgument() : ASTNode {
@@ -1060,7 +1060,7 @@ class PythonCoreParser {
                 if (this.curSymbol.getKind() === TokenKind.Py_Else) {
                     elseNode = this.parseElseStmt();
                 }
-                return new ASTIfNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, elifNodes.reverse(), elseNode);
+                return new ASTIfNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, elifNodes, elseNode);
             }
             throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'if' statement!", this.curSymbol);
         }
@@ -1171,11 +1171,11 @@ class PythonCoreParser {
                             const op4 = this.curSymbol;
                             this.advance();
                             const right = this.parseSuiteStmt();
-                            return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, nodes.reverse(), elsePart, op3, op4, right);
+                            return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, nodes, elsePart, op3, op4, right);
                         }
                         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'finally' statement!", this.curSymbol);
                     }
-                    return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, nodes.reverse(), elsePart, new Token(-1, -1, TokenKind.Empty, []), new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
+                    return new ASTTryNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, nodes, elsePart, new Token(-1, -1, TokenKind.Empty, []), new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
                 }
             }
             throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'try' statement!", this.curSymbol);
@@ -1203,11 +1203,11 @@ class PythonCoreParser {
                     const op3 = this.curSymbol;
                     this.advance();
                     const right = this.parseSuiteStmt();
-                    return new ASTWithNode(startPos, this.curSymbol.getStartPosition(), op1, nodes.reverse(), separatrors.reverse(), op2, op3, right);
+                    return new ASTWithNode(startPos, this.curSymbol.getStartPosition(), op1, nodes, separatrors, op2, op3, right);
                 }
                 else {
                     const right = this.parseSuiteStmt();
-                    return new ASTWithNode(startPos, this.curSymbol.getStartPosition(), op1, nodes.reverse(), separatrors.reverse(), op2, new Token(-1, -1, TokenKind.Empty, []), right);
+                    return new ASTWithNode(startPos, this.curSymbol.getStartPosition(), op1, nodes, separatrors, op2, new Token(-1, -1, TokenKind.Empty, []), right);
                 }
             }
             throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in 'with' statement!", this.curSymbol);
@@ -1275,7 +1275,7 @@ class PythonCoreParser {
                 }
                 const op3 = this.curSymbol;
                 this.advance();
-                return new ASTSuiteNode(startPos, this.curSymbol.getStartPosition(), op1, op2, nodes.reverse(), op3);
+                return new ASTSuiteNode(startPos, this.curSymbol.getStartPosition(), op1, op2, nodes, op3);
             }
             throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting indentation before block statement!", this.curSymbol);
         }
@@ -1312,7 +1312,7 @@ class PythonCoreParser {
         if (this.curSymbol.getKind() !== TokenKind.Newline) throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting <NEWLINE> after simple statement(s)!", this.curSymbol);
         const op1 = this.curSymbol;
         this.advance();
-        return new ASTSimpleStmtNode(startPos, this.curSymbol.getEndPosition(), nodes.reverse(), separators.reverse(), op1);
+        return new ASTSimpleStmtNode(startPos, this.curSymbol.getEndPosition(), nodes, separators, op1);
     }
 
     parseSmallStmt() : ASTNode {
@@ -1456,9 +1456,9 @@ class PythonCoreParser {
                     if (this.curSymbol.getKind() === TokenKind.TypeComment) {
                         const tc = this.curSymbol;
                         this.advance();
-                        return new ASTAssignNode(startPos, this.curSymbol.getStartPosition(), left, operators.reverse(), nodes.reverse(), tc);
+                        return new ASTAssignNode(startPos, this.curSymbol.getStartPosition(), left, operators, nodes, tc);
                     }
-                    return new ASTAssignNode(startPos, this.curSymbol.getStartPosition(), left, operators.reverse(), nodes.reverse(), new Token(-1, -1, TokenKind.Empty, []));
+                    return new ASTAssignNode(startPos, this.curSymbol.getStartPosition(), left, operators, nodes, new Token(-1, -1, TokenKind.Empty, []));
                 }
             default:
                 return left;
@@ -1509,7 +1509,7 @@ class PythonCoreParser {
                     break;
             }
         }
-        return new ASTTestListStarExprNode(startPos, this.curSymbol.getStartPosition(), nodes.reverse(), separators.reverse());
+        return new ASTTestListStarExprNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
     parseDelStmt() : ASTNode {
