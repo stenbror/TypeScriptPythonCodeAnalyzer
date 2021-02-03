@@ -101,6 +101,9 @@ import { ASTBreakNode } from "./ast/ASTBreakNode";
 import { ASTContinueNode } from "./ast/ASTContinueNode";
 import { ASTReturnNode } from "./ast/ASTReturnNode";
 import { ASTRaiseNode } from "./ast/ASTRaiseNode";
+import { ASTGlobalNode } from "./ast/ASTGlobalNode";
+import { ASTNonlocalNode } from "./ast/ASTNonlocalNode";
+import { ASTAssertNode } from "./ast/ASTAssertNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1641,11 +1644,55 @@ class PythonCoreParser {
     }
 
     parseGlobalStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Global) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const nodes: Token[] = [];
+            const separators: Token[] = [];
+            if (this.curSymbol.getKind() !== TokenKind.Name) {
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal in global statement!", this.curSymbol);
+            }
+            nodes.push( this.curSymbol );
+            this.advance();
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() !== TokenKind.Name) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal after ',' in global statement!", this.curSymbol);
+                }
+                nodes.push( this.curSymbol );
+                this.advance();
+            }
+            return new ASTGlobalNode(startPos, this.curSymbol.getStartPosition(), op1, nodes, separators);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'global' in global statement!", this.curSymbol);
     }
 
     parseNonlocalStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Nonlocal) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const nodes: Token[] = [];
+            const separators: Token[] = [];
+            if (this.curSymbol.getKind() !== TokenKind.Name) {
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal in nonlocal statement!", this.curSymbol);
+            }
+            nodes.push( this.curSymbol );
+            this.advance();
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() !== TokenKind.Name) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal after ',' in nonlocal statement!", this.curSymbol);
+                }
+                nodes.push( this.curSymbol );
+                this.advance();
+            }
+            return new ASTNonlocalNode(startPos, this.curSymbol.getStartPosition(), op1, nodes, separators);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'nonlocal' in nonlocal statement!", this.curSymbol);
     }
 
     parseAssertStmt() : ASTNode {
