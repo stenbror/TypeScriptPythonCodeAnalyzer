@@ -1696,7 +1696,20 @@ class PythonCoreParser {
     }
 
     parseAssertStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Assert) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseTest();
+            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseTest();
+                return new ASTAssertNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right);
+            }
+            return new ASTAssertNode(startPos, this.curSymbol.getStartPosition(), op1, left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode(-1, -1));
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'assert' in assert statement!", this.curSymbol);
     }
 
     parseSingleInputStmt() : ASTNode {
