@@ -104,6 +104,7 @@ import { ASTRaiseNode } from "./ast/ASTRaiseNode";
 import { ASTGlobalNode } from "./ast/ASTGlobalNode";
 import { ASTNonlocalNode } from "./ast/ASTNonlocalNode";
 import { ASTAssertNode } from "./ast/ASTAssertNode";
+import { ASTImportNameNode } from "./ast/ASTImportNameNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1616,7 +1617,7 @@ class PythonCoreParser {
             case TokenKind.Py_Import:
                 return this.parseImportNameStmt();
             case TokenKind.Py_From:
-                return this.parseImportFromStmt();ß
+                return this.parseImportFromStmt();
             default:
                 break;
         }
@@ -1624,7 +1625,14 @@ class PythonCoreParser {
     }
 
     parseImportNameStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Global) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseDottedAsNamesStmt();
+            return new ASTImportNameNode(startPos, this.curSymbol.getStartPosition(), op1, right);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'import' in import statement!", this.curSymbol);
     }
 
     parseImportFromStmt() : ASTNode {
