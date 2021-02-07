@@ -1612,6 +1612,14 @@ class PythonCoreParser {
     }
 
     parseImportStmt() : ASTNode {
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Py_Import:
+                return this.parseImportNameStmt();
+            case TokenKind.Py_From:
+                return this.parseImportFromStmt();ß
+            default:
+                break;
+        }
         return new ASTNode();
     }
 
