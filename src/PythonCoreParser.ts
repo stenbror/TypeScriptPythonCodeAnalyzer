@@ -105,6 +105,7 @@ import { ASTGlobalNode } from "./ast/ASTGlobalNode";
 import { ASTNonlocalNode } from "./ast/ASTNonlocalNode";
 import { ASTAssertNode } from "./ast/ASTAssertNode";
 import { ASTImportNameNode } from "./ast/ASTImportNameNode";
+import { ASTDottedNameNode } from "./ast/ASTDottedNameNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1656,7 +1657,24 @@ class PythonCoreParser {
     }
 
     parseDottedNameStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: Token[] = [];
+        const dots: Token[] = [];
+        if (this.curSymbol.getKind() === TokenKind.Name) {
+            nodes.push( this.curSymbol );
+            this.advance();
+            while (this.curSymbol.getKind() === TokenKind.Py_Dot) {
+                dots.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() !== TokenKind.Name) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal in dotted name statement!", this.curSymbol);
+                }
+                nodes.push( this.curSymbol );
+                this.advance();
+            }
+            return new ASTDottedNameNode(startPos, this.curSymbol.getStartPosition(), nodes, dots);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal in dotted name statement!", this.curSymbol);
     }
 
     parseGlobalStmt() : ASTNode {
