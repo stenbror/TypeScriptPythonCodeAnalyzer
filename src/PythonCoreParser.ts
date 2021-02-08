@@ -1865,3 +1865,5 @@ class PythonCoreParser {
         return new ASTNode();
     }
 }
+
+export default PythonCoreParser;
