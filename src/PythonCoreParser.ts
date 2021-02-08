@@ -1681,7 +1681,17 @@ class PythonCoreParser {
     }
 
     parseImportAsNamesStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const separators: Token[] = [];
+        nodes.push( this.parseImportAsNameStmt() );
+        while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+            separators.push( this.curSymbol );
+            this.advance();
+            if (this.curSymbol.getKind() in [ TokenKind.Py_SemiColon, TokenKind.Newline ]) break;
+            nodes.push( this.parseImportAsNameStmt() );
+        } 
+        return new ASTImportAsNamesNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
     parseDottedAsNamesStmt() : ASTNode {
