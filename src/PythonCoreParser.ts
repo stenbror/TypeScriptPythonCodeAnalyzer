@@ -110,6 +110,7 @@ import { ASTDottedAsNameNode } from "./ast/ASTDottedAsNameNode";
 import { ASTDottedAsNamesNode } from "./ast/ASTDottedAsNamesNode";
 import { ASTImportAsNameNode } from "./ast/ASTImportAsNameNode";
 import { ASTImportAsNamesNode } from "./ast/ASTImportAsNamesNode";
+import { ASTImportFromNode } from "./ast/ASTImportFromNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1641,7 +1642,50 @@ class PythonCoreParser {
     }
 
     parseImportFromStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_From) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const dotsAndElipsis: Token[] = [];
+            let left = new ASTNode();
+            while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_Elipsis ]) {
+                dotsAndElipsis.push( this.curSymbol );
+                this.advance();
+            }
+            if (this.curSymbol.getKind() === TokenKind.Py_Import && dotsAndElipsis.length === 0) {
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '.' in from part of import statement!", this.curSymbol);
+            }
+            else if (this.curSymbol.getKind() !== TokenKind.Py_Import) {
+                left = this.parseDottedNameStmt();
+            }
+            if (this.curSymbol.getKind() === TokenKind.Py_Import) {
+                const op2 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    const right = this.parseImportAsNamesStmt();
+                    if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
+                        const op4 = this.curSymbol;
+                        this.advance();
+                        return new ASTImportFromNode(startPos, this.curSymbol.getStartPosition(), op1, left, dotsAndElipsis, op2, op3, right, op4);
+                    }
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' in from import statement!", this.curSymbol);
+                }
+                else if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    return new ASTImportFromNode(startPos, this.curSymbol.getStartPosition(), op1, left, dotsAndElipsis, op2, op3, new ASTNode(), new Token(-1, -1, TokenKind.Empty, []));
+                }
+                else {
+                    const right = this.parseImportAsNamesStmt();
+                    return new ASTImportFromNode(startPos, this.curSymbol.getStartPosition(), op1, left, dotsAndElipsis, op2, new Token(-1, -1, TokenKind.Empty, []), right, new Token(-1, -1, TokenKind.Empty, []));
+                }
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'import' in from import statement!", this.curSymbol);
+            
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'from' in import statement!", this.curSymbol);
     }
 
     parseImportAsNameStmt() : ASTNode {
