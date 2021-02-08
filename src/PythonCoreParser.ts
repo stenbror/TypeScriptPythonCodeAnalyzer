@@ -108,6 +108,8 @@ import { ASTImportNameNode } from "./ast/ASTImportNameNode";
 import { ASTDottedNameNode } from "./ast/ASTDottedNameNode";
 import { ASTDottedAsNameNode } from "./ast/ASTDottedAsNameNode";
 import { ASTDottedAsNamesNode } from "./ast/ASTDottedAsNamesNode";
+import { ASTImportAsNameNode } from "./ast/ASTImportAsNameNode";
+import { ASTImportAsNamesNode } from "./ast/ASTImportAsNamesNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1643,7 +1645,23 @@ class PythonCoreParser {
     }
 
     parseImportAsNameStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Name) {
+            const left = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_As) {
+                const op1 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Name) {
+                    const right = this.curSymbol;
+                    this.advance();
+                    return new ASTImportAsNameNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
+                }
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME literal in import statement!", this.curSymbol);
+            }
+            return new ASTImportAsNameNode(startPos, this.curSymbol.getStartPosition(), left, new Token(-1, -1, TokenKind.Empty, []), new Token(-1, -1, TokenKind.Empty, []));
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME literal in import statement!", this.curSymbol);
     }
 
     parseDottedAsNameStmt() : ASTNode {
