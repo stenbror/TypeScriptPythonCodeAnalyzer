@@ -127,7 +127,7 @@ class PythonCoreParser {
         this.flowLevel = 0;
     }
 
-    advance() {
+    advance() : void {
         const a = 1; // Dummy code for tokenizer, implemented later!
     }
 
