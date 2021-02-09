@@ -1897,7 +1897,34 @@ class PythonCoreParser {
     }
 
     parseDecoratorStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const left = this.parseDottedNameStmt();
+            let op2 = new Token(-1, -1, TokenKind.Empty, []);
+            let op3 = new Token(-1, -1, TokenKind.Empty, []);
+            let right = new ASTNode();
+            if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
+                op2 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() !== TokenKind.Py_RightParen) {
+                    right = this.parseArgList();
+                }
+                if (this.curSymbol.getKind() !== TokenKind.Py_RightParen) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' in decorated statement!", this.curSymbol);
+                }
+                op3 = this.curSymbol;
+                this.advance();
+            }
+            if (this.curSymbol.getKind() === TokenKind.Newline) {
+                const op4 = this.curSymbol;
+                this.advance();
+                return new ASTDecoratorNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, right, op3, op4);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting Newline in decorated statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '@' in decorated statement!", this.curSymbol);
     }
 
     parseFuncDefStmt() : ASTNode {
