@@ -1863,7 +1863,7 @@ class PythonCoreParser {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseFuncDefStmt();
-            return new ASTAsyncFuncNode(startPos, this.curSymbol.getStartPosition, op1, right);
+            return new ASTAsyncFuncNode(startPos, this.curSymbol.getStartPosition(), op1, right);
         }
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'async' in async def statement!", this.curSymbol);
     }
