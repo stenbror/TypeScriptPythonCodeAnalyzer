@@ -1861,7 +1861,27 @@ class PythonCoreParser {
     }
 
     parseDecoratedStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
+            const left = this.parseDecoratorsStmt();
+            switch (this.curSymbol.getKind()) {
+                case TokenKind.Py_Def: {
+                    const right = this.parseFuncDefStmt();
+                    return new ASTDecoratedNode(startPos, this.curSymbol.getStartPosition(), left, right);
+                }
+                case TokenKind.Py_Async: {
+                    const right = this.parseAsyncFuncDefStmt();
+                    return new ASTDecoratedNode(startPos, this.curSymbol.getStartPosition(), left, right);
+                }
+                case TokenKind.Py_Class: {
+                    const right = this.parseClassStmt();
+                    return new ASTDecoratedNode(startPos, this.curSymbol.getStartPosition(), left, right);
+                }
+                default:
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'def', 'async' or 'class' in decorated statement!", this.curSymbol);
+            }
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '@' in decorated statement!", this.curSymbol);
     }
 
     parseDecoratorsStmt() : ASTNode {
