@@ -114,6 +114,7 @@ import { ASTImportFromNode } from "./ast/ASTImportFromNode";
 import { ASTDecoratedNode } from "./ast/ASTDecoratedNode";
 import { ASTDecoratorsNode } from "./ast/ASTDecoratorsNode";
 import { ASTDecoratorNode } from "./ast/ASTDecoratorNode";
+import { ASTAsyncFuncNode } from "./ast/ASTAsyncFuncNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1857,7 +1858,14 @@ class PythonCoreParser {
     }
 
     parseAsyncFuncDefStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Async) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseFuncDefStmt();
+            return new ASTAsyncFuncNode(startPos, this.curSymbol.getStartPosition, op1, right);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'async' in async def statement!", this.curSymbol);
     }
 
     parseDecoratedStmt() : ASTNode {
