@@ -111,6 +111,9 @@ import { ASTDottedAsNamesNode } from "./ast/ASTDottedAsNamesNode";
 import { ASTImportAsNameNode } from "./ast/ASTImportAsNameNode";
 import { ASTImportAsNamesNode } from "./ast/ASTImportAsNamesNode";
 import { ASTImportFromNode } from "./ast/ASTImportFromNode";
+import { ASTDecoratedNode } from "./ast/ASTDecoratedNode";
+import { ASTDecoratorsNode } from "./ast/ASTDecoratorsNode";
+import { ASTDecoratorNode } from "./ast/ASTDecoratorNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
