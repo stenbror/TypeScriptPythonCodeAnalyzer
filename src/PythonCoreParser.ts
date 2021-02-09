@@ -1885,7 +1885,15 @@ class PythonCoreParser {
     }
 
     parseDecoratorsStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        if (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
+            while (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
+                nodes.push( this.parseDecoratorStmt() );
+            }
+            return new ASTDecoratorsNode(startPos, this.curSymbol.getStartPosition(), nodes);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '@' in decorated statement!", this.curSymbol);
     }
 
     parseDecoratorStmt() : ASTNode {
