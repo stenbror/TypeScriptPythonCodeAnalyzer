@@ -119,6 +119,7 @@ import { ASTSingleInputNode } from "./ast/ASTSingleInputNode";
 import { ASTFileInputNode } from "./ast/ASTFileInputNode";
 import { ASTEvalInputNode } from "./ast/ASTEvalInputNode";
 import { ASTTypeInputNode } from "./ast/ASTTypeInputNode";
+import { ASTFuncTypeNode } from "./ast/ASTFuncTypeNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2030,7 +2031,28 @@ class PythonCoreParser {
     }
 
     parseFuncTypeStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
+            const op1 = this.curSymbol;
+            let left = new ASTNode();
+            this.advance();
+            if (this.curSymbol.getKind() !== TokenKind.Py_RightParen) {
+                left = this.parseTypeListStmt();
+            }
+            if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
+                const op2 = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Arrow) {
+                    const op3 = this.curSymbol;
+                    this.advance();
+                    const right = this.parseTest();
+                    return new ASTFuncTypeNode(startPos, this.curSymbol.getStartPosition(), op1, left, op2, op3, right);
+                }
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '->' in type expression!", this.curSymbol);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' in type expression!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '(' in type expression!", this.curSymbol);
     }
 
     parseTypeListStmt() : ASTNode {
