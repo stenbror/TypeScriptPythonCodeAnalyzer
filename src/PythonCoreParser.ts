@@ -116,6 +116,7 @@ import { ASTDecoratorsNode } from "./ast/ASTDecoratorsNode";
 import { ASTDecoratorNode } from "./ast/ASTDecoratorNode";
 import { ASTAsyncFuncNode } from "./ast/ASTAsyncFuncNode";
 import { ASTSingleInputNode } from "./ast/ASTSingleInputNode";
+import { ASTFileInputNode } from "./ast/ASTFileInputNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1874,7 +1875,20 @@ class PythonCoreParser {
     }
 
     parseFileInputStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const newlines: Token[] = [];
+        this.advance();
+        while (this.curSymbol.getKind() !== TokenKind.EOF) {
+            if (this.curSymbol.getKind() === TokenKind.Newline) {
+                newlines.push( this.curSymbol );
+                this.advance();
+            }
+            else {
+                nodes.push( this.parseStmt() );
+            }
+        }
+        return new ASTFileInputNode(startPos, this.curSymbol.getStartPosition(), nodes, newlines, this.curSymbol);
     }
 
     parseEvalInputStmt() : ASTNode {
