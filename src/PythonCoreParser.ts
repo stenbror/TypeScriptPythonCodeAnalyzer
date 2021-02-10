@@ -115,6 +115,7 @@ import { ASTDecoratedNode } from "./ast/ASTDecoratedNode";
 import { ASTDecoratorsNode } from "./ast/ASTDecoratorsNode";
 import { ASTDecoratorNode } from "./ast/ASTDecoratorNode";
 import { ASTAsyncFuncNode } from "./ast/ASTAsyncFuncNode";
+import { ASTSingleInputNode } from "./ast/ASTSingleInputNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1846,7 +1847,30 @@ class PythonCoreParser {
     }
 
     parseSingleInputStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        this.advance();
+        switch (this.curSymbol.getKind()) {
+            case TokenKind.Newline:
+                return new ASTSingleInputNode(startPos, this.curSymbol.getStartPosition(), new ASTNode(), this.curSymbol);
+            case TokenKind.Py_If:
+            case TokenKind.Py_For:
+            case TokenKind.Py_While:
+            case TokenKind.Py_With:
+            case TokenKind.Py_Try:
+            case TokenKind.Py_Def:
+            case TokenKind.Py_Class:
+            case TokenKind.Py_Async:
+            case TokenKind.Py_Matrice:
+            {
+                const right = this.parseCompoundStmt();
+                if (this.curSymbol.getKind() === TokenKind.Newline) {
+                    return new ASTSingleInputNode(startPos, this.curSymbol.getStartPosition(), right, this.curSymbol);
+                }
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NEWLINE after compound statement!", this.curSymbol);
+            }
+            default:
+                return this.parseSimpleStmt();
+        }
     }
 
     parseFileInputStmt() : ASTNode {
