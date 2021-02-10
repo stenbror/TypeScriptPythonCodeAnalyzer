@@ -118,6 +118,7 @@ import { ASTAsyncFuncNode } from "./ast/ASTAsyncFuncNode";
 import { ASTSingleInputNode } from "./ast/ASTSingleInputNode";
 import { ASTFileInputNode } from "./ast/ASTFileInputNode";
 import { ASTEvalInputNode } from "./ast/ASTEvalInputNode";
+import { ASTTypeInputNode } from "./ast/ASTTypeInputNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2014,7 +2015,18 @@ class PythonCoreParser {
     }
 
     parseFuncTypeInputStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const newlines: Token[] = [];
+        this.advance();
+        const right = this.parseFuncTypeStmt();
+        while (this.curSymbol.getKind() === TokenKind.Newline) {
+            newlines.push( this.curSymbol );
+            this.advance();
+        }
+        if (this.curSymbol.getKind() === TokenKind.EOF) {
+            return new ASTTypeInputNode(startPos, this.curSymbol.getStartPosition(), right, newlines, this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting EOF after statement!", this.curSymbol);
     }
 
     parseFuncTypeStmt() : ASTNode {
