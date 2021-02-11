@@ -121,6 +121,7 @@ import { ASTEvalInputNode } from "./ast/ASTEvalInputNode";
 import { ASTTypeInputNode } from "./ast/ASTTypeInputNode";
 import { ASTFuncTypeNode } from "./ast/ASTFuncTypeNode";
 import { ASTTypeListNode } from "./ast/ASTTypeListNode";
+import { ASTFuncBodySuiteNode } from "./ast/ASTFuncBodySuiteNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2013,7 +2014,36 @@ class PythonCoreParser {
     }
 
     parseFuncBodySuiteStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Newline) {
+            const op1 = this.curSymbol;
+            this.advance();
+            let tc = new Token(-1, -1, TokenKind.Empty, []);
+            let nl = new Token(-1, -1, TokenKind.Empty, []);
+            if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                tc = this.curSymbol;
+                this.advance();
+                if (this.curSymbol.getKind() !== TokenKind.Newline) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NEWLINE after type comment!", this.curSymbol);
+                }
+                nl = this.curSymbol;
+                this.advance();
+            }
+            if (this.curSymbol.getKind() === TokenKind.Indent) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const nodes: ASTNode[] = [];
+                nodes.push( this.parseStmt() );
+                while (this.curSymbol.getKind() !== TokenKind.Dedent ) {
+                    nodes.push( this.parseStmt() );
+                }
+                const op3 = this.curSymbol;
+                this.advance();
+                return new ASTFuncBodySuiteNode(startPos, this.curSymbol.getStartPosition(), op1, tc, nl, op2, nodes, op3);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting indentation in statement block!", this.curSymbol);
+        }
+        return this.parseSimpleStmt();
     }
 
     parseFuncTypeInputStmt() : ASTNode {
