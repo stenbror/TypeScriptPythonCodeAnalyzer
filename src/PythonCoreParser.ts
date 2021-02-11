@@ -123,6 +123,7 @@ import { ASTFuncTypeNode } from "./ast/ASTFuncTypeNode";
 import { ASTTypeListNode } from "./ast/ASTTypeListNode";
 import { ASTFuncBodySuiteNode } from "./ast/ASTFuncBodySuiteNode";
 import { ASTVFPDefNode } from "./ast/ASTVFPDefNode";
+import { ASTTFPDefNode } from "./ast/ASTTFPDefNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2003,7 +2004,19 @@ class PythonCoreParser {
     }
 
     parseTFPStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Name) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const right = this.parseTest();
+                return new ASTTFPDefNode(startPos, this.curSymbol.getStartPosition(), op1, op2, right);
+            }
+            return new ASTTFPDefNode(startPos, this.curSymbol.getStartPosition(), op1, new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME as argument!", this.curSymbol);
     }
 
     parseVarArgsListStmt() : ASTNode {
