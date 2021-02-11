@@ -120,6 +120,7 @@ import { ASTFileInputNode } from "./ast/ASTFileInputNode";
 import { ASTEvalInputNode } from "./ast/ASTEvalInputNode";
 import { ASTTypeInputNode } from "./ast/ASTTypeInputNode";
 import { ASTFuncTypeNode } from "./ast/ASTFuncTypeNode";
+import { ASTTypeListNode } from "./ast/ASTTypeListNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2056,7 +2057,69 @@ class PythonCoreParser {
     }
 
     parseTypeListStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const separators: Token[] = [];
+        let mulNode = new ASTNode();
+        let powerNode = new ASTNode();
+        let mul = new Token(-1, -1, TokenKind.Empty, []);
+        let power = new Token(-1, -1, TokenKind.Empty, []);
+        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            mul = this.curSymbol;
+            this.advance();
+            mulNode = this.parseTest();
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                    power = this.curSymbol;
+                    this.advance();
+                    powerNode = this.parseTest();
+                    break;
+                }
+                nodes.push( this.parseTest() );
+            }
+        }
+        else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+            power = this.curSymbol;
+            this.advance();
+            powerNode = this.parseTest();
+        }
+        else {
+            nodes.push( this.parseTest() );
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+                    mul = this.curSymbol;
+                    this.advance();
+                    mulNode = this.parseTest();
+                    while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                        separators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                            power = this.curSymbol;
+                            this.advance();
+                            powerNode = this.parseTest();
+                            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
+                            }
+                            break;
+                        }
+                        nodes.push( this.parseTest() );
+                    }
+                }
+                else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                    power = this.curSymbol;
+                    this.advance();
+                    powerNode = this.parseTest();
+                }
+                else {
+                    nodes.push( this.parseTest() );
+                }
+            }
+        }
+        return new ASTTypeListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators, mul, mulNode, power, powerNode);
     }
 }
 
