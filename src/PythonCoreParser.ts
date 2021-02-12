@@ -125,6 +125,7 @@ import { ASTFuncBodySuiteNode } from "./ast/ASTFuncBodySuiteNode";
 import { ASTVFPDefNode } from "./ast/ASTVFPDefNode";
 import { ASTTFPDefNode } from "./ast/ASTTFPDefNode";
 import { ASTFuncDefNode } from "./ast/ASTFuncDefNode";
+import { ASTParameterNode } from "./ast/ASTParameterNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2027,7 +2028,24 @@ class PythonCoreParser {
     }
 
     parseParametersStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
+                const op2 = this.curSymbol;
+                this.advance();
+                return new ASTParameterNode(startPos, this.curSymbol.getStartPosition(), op1, new ASTNode(), op2);
+            }
+            const right = this.parseTypeListStmt();
+            if (this.curSymbol.getKind() === TokenKind.Py_RightParen) {
+                const op2 = this.curSymbol;
+                this.advance();
+                return new ASTParameterNode(startPos, this.curSymbol.getStartPosition(), op1, right, op2);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' in parameter!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '(' in parameter!", this.curSymbol);
     }
 
     parseTypedArgsListStmt() : ASTNode {
