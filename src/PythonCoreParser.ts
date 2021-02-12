@@ -124,6 +124,7 @@ import { ASTTypeListNode } from "./ast/ASTTypeListNode";
 import { ASTFuncBodySuiteNode } from "./ast/ASTFuncBodySuiteNode";
 import { ASTVFPDefNode } from "./ast/ASTVFPDefNode";
 import { ASTTFPDefNode } from "./ast/ASTTFPDefNode";
+import { ASTFuncDefNode } from "./ast/ASTFuncDefNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -1992,7 +1993,37 @@ class PythonCoreParser {
     }
 
     parseFuncDefStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        if (this.curSymbol.getKind() === TokenKind.Py_Def) {
+            const op1 = this.curSymbol;
+            this.advance();
+            if (this.curSymbol.getKind() === TokenKind.Name) {
+                const op2 = this.curSymbol;
+                this.advance();
+                const left = this.parseParametersStmt();
+                let op3 = new Token(-1, -1, TokenKind.Empty, []);
+                let right = new ASTNode();
+                if (this.curSymbol.getKind() === TokenKind.Py_Arrow) {
+                    op3 = this.curSymbol;
+                    this.advance();
+                    right = this.parseTest();
+                }
+                if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
+                    const op4 = this.curSymbol;
+                    this.advance();
+                    let tc = new Token(-1, -1, TokenKind.Empty, []);
+                    if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                        tc = this.curSymbol;
+                        this.advance();
+                    }
+                    const next = this.parseFuncBodySuiteStmt();
+                    return new ASTFuncDefNode(startPos, this.curSymbol.getStartPosition(), op1, op2, left, op3, right, op4, tc, next);
+                }
+                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in def statement!", this.curSymbol);
+            }
+            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME in def statement!", this.curSymbol);
+        }
+        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'def' in def statement!", this.curSymbol);
     }
 
     parseParametersStmt() : ASTNode {
