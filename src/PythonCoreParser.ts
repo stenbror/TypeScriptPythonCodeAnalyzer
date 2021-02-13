@@ -2192,11 +2192,18 @@ class PythonCoreParser {
             while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
                 separators.push( this.curSymbol );
                 this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Colon) break;
                 if (this.curSymbol.getKind() === TokenKind.Py_Power) {
                     power = this.curSymbol;
                     this.advance();
                     powerNode = this.parseVFPAssignStmt();
-                    break;
+                    if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                        separators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
+                        }
+                    }
                 }
                 nodes.push( this.parseVFPAssignStmt() );
             }
@@ -2205,12 +2212,20 @@ class PythonCoreParser {
             power = this.curSymbol;
             this.advance();
             powerNode = this.parseVFPAssignStmt();
+            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
+                }
+            }
         }
         else {
             nodes.push( this.parseVFPAssignStmt() );
             while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
                 separators.push( this.curSymbol );
                 this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Colon) break;
                 if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
                     mul = this.curSymbol;
                     this.advance();
@@ -2218,6 +2233,7 @@ class PythonCoreParser {
                     while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
                         separators.push( this.curSymbol );
                         this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Colon) break;
                         if (this.curSymbol.getKind() === TokenKind.Py_Power) {
                             power = this.curSymbol;
                             this.advance();
@@ -2234,6 +2250,13 @@ class PythonCoreParser {
                     power = this.curSymbol;
                     this.advance();
                     powerNode = this.parseVFPAssignStmt();
+                    if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                        separators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
+                        }
+                    }
                 }
                 else if (this.curSymbol.getKind() === TokenKind.Py_Div && !slashSeen && oneSeen) {
                     div = this.curSymbol;
@@ -2241,6 +2264,7 @@ class PythonCoreParser {
                     slashSeen = true;
                 }
                 else {
+                    if (this.curSymbol.getKind() === TokenKind.Py_Colon) break;
                     nodes.push( this.parseVFPAssignStmt() );
                     oneSeen = true;
                 }
