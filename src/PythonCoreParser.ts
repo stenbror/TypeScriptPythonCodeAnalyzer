@@ -128,6 +128,8 @@ import { ASTFuncDefNode } from "./ast/ASTFuncDefNode";
 import { ASTParameterNode } from "./ast/ASTParameterNode";
 import { ASTVFPAssignNode } from "./ast/ASTVFPAssignNode";
 import { ASTTFPAssignNode } from "./ast/ASTTFPAssignNode";
+import { ASTVarArgsListNode } from "./ast/ASTVarArgsListNode";
+import { ASTTypedArgsListNode } from "./ast/ASTTypedArgsListNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
