@@ -2095,7 +2095,78 @@ class PythonCoreParser {
     }
 
     parseVarArgsListStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const separators: Token[] = [];
+        let div = new Token(-1, -1, TokenKind.Empty, []);
+        let slashSeen = false;
+        let oneSeen = false;
+        let mulNode = new ASTNode();
+        let powerNode = new ASTNode();
+        let mul = new Token(-1, -1, TokenKind.Empty, []);
+        let power = new Token(-1, -1, TokenKind.Empty, []);
+        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            mul = this.curSymbol;
+            this.advance();
+            mulNode = this.parseVFPAssignStmt();
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                    power = this.curSymbol;
+                    this.advance();
+                    powerNode = this.parseVFPAssignStmt();
+                    break;
+                }
+                nodes.push( this.parseVFPAssignStmt() );
+            }
+        }
+        else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+            power = this.curSymbol;
+            this.advance();
+            powerNode = this.parseVFPAssignStmt();
+        }
+        else {
+            nodes.push( this.parseVFPAssignStmt() );
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+                    mul = this.curSymbol;
+                    this.advance();
+                    mulNode = this.parseVFPAssignStmt();
+                    while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                        separators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                            power = this.curSymbol;
+                            this.advance();
+                            powerNode = this.parseVFPAssignStmt();
+                            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
+                            }
+                            break;
+                        }
+                        nodes.push( this.parseVFPAssignStmt() );
+                    }
+                }
+                else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                    power = this.curSymbol;
+                    this.advance();
+                    powerNode = this.parseVFPAssignStmt();
+                }
+                else if (this.curSymbol.getKind() === TokenKind.Py_Div && !slashSeen && oneSeen) {
+                    div = this.curSymbol;
+                    this.advance();
+                    slashSeen = true;
+                }
+                else {
+                    nodes.push( this.parseVFPAssignStmt() );
+                    oneSeen = true;
+                }
+            }
+        }
+        return new ASTVarArgsListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators, div, mul, mulNode, power, powerNode);
     }
 
     parseVFPAssignStmt() : ASTNode {
