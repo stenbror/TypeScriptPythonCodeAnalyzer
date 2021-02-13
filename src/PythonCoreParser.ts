@@ -5,6 +5,7 @@
 // Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
 
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
+import PythonCoreTokenizer from "./PythonCoreTokenizer";
 
 import { ASTNode } from "./ast/ASTNode";
 import { ASTAtomNameNode } from "./ast/ASTAtomNameLiteralNode";
@@ -147,16 +148,17 @@ export class SyntaxErrorException extends Error {
 class PythonCoreParser {
     private curSymbol: Token;
     private flowLevel: number;
+    private lexer: PythonCoreTokenizer;
 
-    constructor() {
+    constructor(lexer: PythonCoreTokenizer) {
         this.curSymbol = new Token(-1, -1, TokenKind.Empty, []);
         this.flowLevel = 0;
+        this.lexer = lexer;
     }
 
     advance() : void {
-        const a = 1; // Dummy code for tokenizer, implemented later!
+        this.curSymbol = this.lexer.advance();
     }
-
 
     parseAtom() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();

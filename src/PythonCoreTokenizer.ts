@@ -11,6 +11,10 @@ class PythonCoreTokenizer {
     constructor(private SourceCode: string) {
         
     }
+
+    advance() : Token {
+        return new Token(-1, -1, TokenKind.Empty, []);
+    }
 }
 
 export default PythonCoreTokenizer;
