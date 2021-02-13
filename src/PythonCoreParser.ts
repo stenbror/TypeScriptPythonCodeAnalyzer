@@ -2062,22 +2062,12 @@ class PythonCoreParser {
 
     parseTFPAssignStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
-        let tc = new Token(-1, -1, TokenKind.Empty, []);
-        let tcSeen = false;
-        if (this.curSymbol.getKind() === TokenKind.TypeComment) {
-            tc = this.curSymbol;
-            this.advance();
-            tcSeen = true;
-        }
         const left = this.parseTFPDefStmt();
         if (this.curSymbol.getKind() === TokenKind.Py_Assign) {
             const op1 = this.curSymbol;
             this.advance();
             const right = this.parseTest();
-            return new ASTTFPAssignNode(startPos, this.curSymbol.getStartPosition(), tc, left, op1, right);
-        }
-        else if (tcSeen) {
-            return new ASTTFPAssignNode(startPos, this.curSymbol.getStartPosition(), tc, left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
+            return new ASTTFPAssignNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
         }
         return left;
     }
@@ -2087,74 +2077,70 @@ class PythonCoreParser {
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
         const tc: Token[] = [];
-        let div = new Token(-1, -1, TokenKind.Empty, []);
-        let slashSeen = false;
-        let oneSeen = false;
+        const div = new Token(-1, -1, TokenKind.Empty, []);
         let mulNode = new ASTNode();
         let powerNode = new ASTNode();
         let mul = new Token(-1, -1, TokenKind.Empty, []);
         let power = new Token(-1, -1, TokenKind.Empty, []);
-        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
-            mul = this.curSymbol;
-            this.advance();
-            mulNode = this.parseTFPAssignStmt();
-            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
-                separators.push( this.curSymbol );
-                this.advance();
-                if (this.curSymbol.getKind() === TokenKind.Py_Power) {
-                    power = this.curSymbol;
+        if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+            power = this.curSymbol;
+            this.advance;
+            powerNode = this.parseTFPDefStmt();
+            if (this.curSymbol.getKind() in [ TokenKind.Py_Comma, TokenKind.TypeComment ]) {
+                if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                    separators.push( this.curSymbol );
                     this.advance();
-                    powerNode = this.parseTFPAssignStmt();
-                    break;
                 }
-                nodes.push( this.parseTFPAssignStmt() );
+                if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                    tc.push( this.curSymbol );
+                    this.advance();
+                }
             }
         }
-        else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
-            power = this.curSymbol;
+        else if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            mul = this.curSymbol;
             this.advance();
-            powerNode = this.parseTFPAssignStmt();
-        }
-        else {
-            nodes.push( this.parseTFPAssignStmt() );
+            mulNode = this.parseTFPDefStmt();
+            if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                tc.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() != TokenKind.Py_RightParen) {
+                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' after final typecomment!", this.curSymbol);
+                }
+            }
             while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
                 separators.push( this.curSymbol );
                 this.advance();
-                if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
-                    mul = this.curSymbol;
+                if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                    tc.push( this.curSymbol );
                     this.advance();
-                    mulNode = this.parseTFPAssignStmt();
-                    while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
-                        separators.push( this.curSymbol );
-                        this.advance();
-                        if (this.curSymbol.getKind() === TokenKind.Py_Power) {
-                            power = this.curSymbol;
-                            this.advance();
-                            powerNode = this.parseTFPAssignStmt();
-                            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
-                                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
-                            }
-                            break;
-                        }
-                        nodes.push( this.parseTFPAssignStmt() );
-                    }
                 }
+                if (this.curSymbol.getKind() === TokenKind.Py_RightParen) break;
                 else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
                     power = this.curSymbol;
-                    this.advance();
-                    powerNode = this.parseTFPAssignStmt();
-                }
-                else if (this.curSymbol.getKind() === TokenKind.Py_Div && !slashSeen && oneSeen) {
-                    div = this.curSymbol;
-                    this.advance();
-                    slashSeen = true;
+                    this.advance;
+                    powerNode = this.parseTFPDefStmt();
+                    if (this.curSymbol.getKind() in [ TokenKind.Py_Comma, TokenKind.TypeComment ]) {
+                        if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                            separators.push( this.curSymbol );
+                            this.advance();
+                        }
+                        if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                            tc.push( this.curSymbol );
+                            this.advance();
+                        }
+                    }
+                    if (this.curSymbol.getKind() != TokenKind.Py_RightParen) {
+                        throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' after final typecomment!", this.curSymbol);
+                    }
                 }
                 else {
                     nodes.push( this.parseTFPAssignStmt() );
-                    oneSeen = true;
                 }
             }
         }
+        // else
+        
         return new ASTTypedArgsListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators, div, mul, mulNode, power, powerNode, tc);
     }
 
