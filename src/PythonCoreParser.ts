@@ -127,6 +127,7 @@ import { ASTTFPDefNode } from "./ast/ASTTFPDefNode";
 import { ASTFuncDefNode } from "./ast/ASTFuncDefNode";
 import { ASTParameterNode } from "./ast/ASTParameterNode";
 import { ASTVFPAssignNode } from "./ast/ASTVFPAssignNode";
+import { ASTTFPAssignNode } from "./ast/ASTTFPAssignNode";
 
 export class SyntaxErrorException extends Error {
     constructor(private Position: number, private text: string, private ErrorToken: Token) {
@@ -2049,11 +2050,33 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '(' in parameter!", this.curSymbol);
     }
 
+    parseTFPAssignStmt() : ASTNode {
+        const startPos = this.curSymbol.getStartPosition();
+        let tc = new Token(-1, -1, TokenKind.Empty, []);
+        let tcSeen = false;
+        if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+            tc = this.curSymbol;
+            this.advance();
+            tcSeen = true;
+        }
+        const left = this.parseTFPDefStmt();
+        if (this.curSymbol.getKind() === TokenKind.Py_Assign) {
+            const op1 = this.curSymbol;
+            this.advance();
+            const right = this.parseTest();
+            return new ASTTFPAssignNode(startPos, this.curSymbol.getStartPosition(), tc, left, op1, right);
+        }
+        else if (tcSeen) {
+            return new ASTTFPAssignNode(startPos, this.curSymbol.getStartPosition(), tc, left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
+        }
+        return left;
+    }
+
     parseTypedArgsListStmt() : ASTNode {
         return new ASTNode();
     }
 
-    parseTFPStmt() : ASTNode {
+    parseTFPDefStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Name) {
             const op1 = this.curSymbol;
@@ -2069,6 +2092,10 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME as argument!", this.curSymbol);
     }
 
+    parseVarArgsListStmt() : ASTNode {
+        return new ASTNode();
+    }
+
     parseVFPAssignStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseVFPDefStmt();
@@ -2079,10 +2106,6 @@ class PythonCoreParser {
             return new ASTVFPAssignNode(startPos, this.curSymbol.getStartPosition(), left, op1, right);
         }
         return left;
-    }
-
-    parseVarArgsListStmt() : ASTNode {
-        return new ASTNode();
     }
 
     parseVFPDefStmt() : ASTNode {
