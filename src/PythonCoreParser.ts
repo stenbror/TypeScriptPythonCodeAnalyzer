@@ -1,3 +1,9 @@
+
+// PythonCoreParser
+// Written by Richard Magnor Stenbro. stenbror@hotmail.com
+// Implements Python grammar 3.9 in Typescript for code analyzing purposes of Python code.
+// Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
+
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 
 import { ASTNode } from "./ast/ASTNode";
@@ -2075,7 +2081,79 @@ class PythonCoreParser {
     }
 
     parseTypedArgsListStmt() : ASTNode {
-        return new ASTNode();
+        const startPos = this.curSymbol.getStartPosition();
+        const nodes: ASTNode[] = [];
+        const separators: Token[] = [];
+        const tc: Token[] = [];
+        let div = new Token(-1, -1, TokenKind.Empty, []);
+        let slashSeen = false;
+        let oneSeen = false;
+        let mulNode = new ASTNode();
+        let powerNode = new ASTNode();
+        let mul = new Token(-1, -1, TokenKind.Empty, []);
+        let power = new Token(-1, -1, TokenKind.Empty, []);
+        if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+            mul = this.curSymbol;
+            this.advance();
+            mulNode = this.parseTFPAssignStmt();
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                    power = this.curSymbol;
+                    this.advance();
+                    powerNode = this.parseTFPAssignStmt();
+                    break;
+                }
+                nodes.push( this.parseTFPAssignStmt() );
+            }
+        }
+        else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+            power = this.curSymbol;
+            this.advance();
+            powerNode = this.parseTFPAssignStmt();
+        }
+        else {
+            nodes.push( this.parseTFPAssignStmt() );
+            while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                separators.push( this.curSymbol );
+                this.advance();
+                if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+                    mul = this.curSymbol;
+                    this.advance();
+                    mulNode = this.parseTFPAssignStmt();
+                    while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                        separators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                            power = this.curSymbol;
+                            this.advance();
+                            powerNode = this.parseTFPAssignStmt();
+                            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Unexpected ',' after '**' expression!", this.curSymbol);
+                            }
+                            break;
+                        }
+                        nodes.push( this.parseTFPAssignStmt() );
+                    }
+                }
+                else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                    power = this.curSymbol;
+                    this.advance();
+                    powerNode = this.parseTFPAssignStmt();
+                }
+                else if (this.curSymbol.getKind() === TokenKind.Py_Div && !slashSeen && oneSeen) {
+                    div = this.curSymbol;
+                    this.advance();
+                    slashSeen = true;
+                }
+                else {
+                    nodes.push( this.parseTFPAssignStmt() );
+                    oneSeen = true;
+                }
+            }
+        }
+        return new ASTTypedArgsListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators, div, mul, mulNode, power, powerNode, tc);
     }
 
     parseTFPDefStmt() : ASTNode {
