@@ -2152,14 +2152,88 @@ class PythonCoreParser {
                 else if (this.curSymbol.getKind() === TokenKind.Py_Div) {
                     div = this.curSymbol;
                     this.advance();
-
-
-
-
-
-
-                    
-
+                    if (this.curSymbol.getKind() in [ TokenKind.Py_Comma, TokenKind.TypeComment ]) {
+                        if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                            separators.push( this.curSymbol );
+                            this.advance();
+                        }
+                        if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                            tc.push( this.curSymbol );
+                            this.advance();
+                        }
+                    }
+                    nodes.push( this.parseTFPAssignStmt() );
+                    while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                        separators.push( this.curSymbol );
+                        this.advance();
+                        if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                            tc.push( this.curSymbol );
+                            this.advance();
+                        }
+                        if (this.curSymbol.getKind() === TokenKind.Py_RightParen) break;
+                        else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                            power = this.curSymbol;
+                            this.advance;
+                            powerNode = this.parseTFPDefStmt();
+                            if (this.curSymbol.getKind() in [ TokenKind.Py_Comma, TokenKind.TypeComment ]) {
+                                if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                                    separators.push( this.curSymbol );
+                                    this.advance();
+                                }
+                                if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                                    tc.push( this.curSymbol );
+                                    this.advance();
+                                }
+                            }
+                            if (this.curSymbol.getKind() !== TokenKind.Py_RightParen) {
+                                throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' after final typecomment!", this.curSymbol);
+                            }
+                        }
+                        else if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
+                            mul = this.curSymbol;
+                            this.advance();
+                            mulNode = this.parseTFPDefStmt();
+                            if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                                tc.push( this.curSymbol );
+                                this.advance();
+                                if (this.curSymbol.getKind() != TokenKind.Py_RightParen) {
+                                    throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' after final typecomment!", this.curSymbol);
+                                }
+                            }
+                            else {
+                                while (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                                    separators.push( this.curSymbol );
+                                    this.advance();
+                                    if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                                        tc.push( this.curSymbol );
+                                        this.advance();
+                                        if (this.curSymbol.getKind() === TokenKind.Py_RightParen) break;
+                                    }
+                                    if (this.curSymbol.getKind() === TokenKind.Py_Power) {
+                                        power = this.curSymbol;
+                                        this.advance;
+                                        powerNode = this.parseTFPDefStmt();
+                                        if (this.curSymbol.getKind() in [ TokenKind.Py_Comma, TokenKind.TypeComment ]) {
+                                            if (this.curSymbol.getKind() === TokenKind.Py_Comma) {
+                                                separators.push( this.curSymbol );
+                                                this.advance();
+                                            }
+                                            if (this.curSymbol.getKind() === TokenKind.TypeComment) {
+                                                tc.push( this.curSymbol );
+                                                this.advance();
+                                            }
+                                        }
+                                        if (this.curSymbol.getKind() !== TokenKind.Py_RightParen) {
+                                            throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ')' after final typecomment!", this.curSymbol);
+                                        }
+                                    }
+                                    else {
+                                        nodes.push( this.parseTFPAssignStmt() );
+                                    }
+                                }
+                            }
+                        }
+                    }
                 } 
                 else if (this.curSymbol.getKind() === TokenKind.Py_Power) {
                     power = this.curSymbol;
