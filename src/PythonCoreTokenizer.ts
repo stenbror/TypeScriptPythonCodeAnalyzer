@@ -180,6 +180,58 @@ class PythonCoreTokenizer {
                 }
                 return TokenKind.Py_Matrice;
             }
+            case "&": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_BitAndAssign;
+                }
+                return TokenKind.Py_BitAnd;
+            }
+            case "|": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_BitOrAssign;
+                }
+                return TokenKind.Py_BitOr;
+            }
+            case "^": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_BitXorAssign;
+                }
+                return TokenKind.Py_BitXor;
+            }
+            case "~": {
+                this.ch = this.getChar();
+                return TokenKind.Py_BitInvert;
+            }
+            case "(": {
+                this.ch = this.getChar();
+                return TokenKind.Py_LeftParen;
+            }
+            case "[": {
+                this.ch = this.getChar();
+                return TokenKind.Py_LeftBracket;
+            }
+            case "{": {
+                this.ch = this.getChar();
+                return TokenKind.Py_LeftCurly;
+            }
+            case ")": {
+                this.ch = this.getChar();
+                return TokenKind.Py_RightParen;
+            }
+            case "]": {
+                this.ch = this.getChar();
+                return TokenKind.Py_RightBracket;
+            }
+            case "}": {
+                this.ch = this.getChar();
+                return TokenKind.Py_RightCurly;
+            }
 
             default:
                 return TokenKind.Empty;
