@@ -104,6 +104,38 @@ class PythonCoreTokenizer {
                 }
                 else return TokenKind.Py_Greater;
             }
+            case "*": {
+                this.ch = this.getChar();
+                if (this.ch === "*") {
+                    this.ch = this.getChar();
+                    if (this.ch === "=") {
+                        this.ch = this.getChar();
+                        return TokenKind.Py_PowerAssign;
+                    }
+                    return TokenKind.Py_Power;
+                }
+                else if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_MulAssign;
+                }
+                else return TokenKind.Py_Mul;
+            }
+            case "/": {
+                this.ch = this.getChar();
+                if (this.ch === "/") {
+                    this.ch = this.getChar();
+                    if (this.ch === "=") {
+                        this.ch = this.getChar();
+                        return TokenKind.Py_FloorDivAssign;
+                    }
+                    return TokenKind.Py_FloorDiv;
+                }
+                else if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_DivAssign;
+                }
+                else return TokenKind.Py_Div;
+            }
 
             default:
                 return TokenKind.Empty;
