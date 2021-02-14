@@ -86,7 +86,7 @@ class PythonCoreTokenizer {
                     this.ch = this.getChar();
                     return TokenKind.Py_NotEqual;
                 }
-                else return TokenKind.Py_Less;
+                return TokenKind.Py_Less;
             }
             case ">": {
                 this.ch = this.getChar();
@@ -102,7 +102,7 @@ class PythonCoreTokenizer {
                     this.ch = this.getChar();
                     return TokenKind.Py_GreaterEqual;
                 }
-                else return TokenKind.Py_Greater;
+                return TokenKind.Py_Greater;
             }
             case "*": {
                 this.ch = this.getChar();
@@ -118,7 +118,7 @@ class PythonCoreTokenizer {
                     this.ch = this.getChar();
                     return TokenKind.Py_MulAssign;
                 }
-                else return TokenKind.Py_Mul;
+                return TokenKind.Py_Mul;
             }
             case "/": {
                 this.ch = this.getChar();
@@ -134,7 +134,51 @@ class PythonCoreTokenizer {
                     this.ch = this.getChar();
                     return TokenKind.Py_DivAssign;
                 }
-                else return TokenKind.Py_Div;
+                return TokenKind.Py_Div;
+            }
+            case ":": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_ColonAssign;
+                }
+                return TokenKind.Py_Colon;
+            }
+            case "+": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_PlusAssign;
+                }
+                return TokenKind.Py_Plus;
+            }
+            case "-": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_MinusAssign;
+                }
+                else if (this.ch === ">") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_Arrow;
+                }
+                return TokenKind.Py_Minus;
+            }
+            case "%": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_ModuloAssign;
+                }
+                return TokenKind.Py_Modulo;
+            }
+            case "@": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_MatriceAssign;
+                }
+                return TokenKind.Py_Matrice;
             }
 
             default:
