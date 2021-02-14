@@ -280,20 +280,37 @@ class PythonCoreTokenizer {
         }
     }
 
-    isStartChar() : boolean {
+    private isStartChar() : boolean {
         if (this.ch >= "a" && this.ch <= "z") return true;
         else if (this.ch >= "A" && this.ch <= "Z") return true;
         else if (this.ch === "_") return true;
         return false;
     }
 
-    isLetterCharOrDigit() : boolean {
+    private isLetterCharOrDigit() : boolean {
         if (this.isStartChar()) return true;
         else if (this.ch >= "0" && this.ch <= "9") return true;
         return false;
     }
 
-    indentifierOrReservedKeyword() : TokenKind {
+    private isHexDigit() : boolean {
+        if (this.ch >= "0" && this.ch <= "9") return true;
+        else if (this.ch >= "a" && this.ch <= "f") return true;
+        else if (this.ch >= "A" && this.ch <= "F") return true;
+        return false;
+    }
+
+    private isOctetDigit() : boolean {
+        if (this.ch >= "0" && this.ch <= "7") return true;
+        return false;
+    }
+
+    private isBinaryDigit() : boolean {
+        if (this.ch === "0" || this.ch === "1") return true;
+        return false;
+    }
+
+    private indentifierOrReservedKeyword() : TokenKind {
         this.tokenStart = this.pos;
         if (this.isStartChar()) {
             this.ch = this.getChar();
@@ -313,7 +330,7 @@ class PythonCoreTokenizer {
         return TokenKind.Empty;
     }
 
-    advance() : Token {
+    public advance() : Token {
         return new Token(-1, -1, TokenKind.Empty, []);
     }
 }
