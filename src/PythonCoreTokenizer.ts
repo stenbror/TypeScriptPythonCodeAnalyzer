@@ -9,7 +9,9 @@ import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./T
 
 class PythonCoreTokenizer {
 
-    private keywords: Map<string, TokenKind>;
+    private keywords: Map<string, TokenKind>;   // Reserved keywords in Python grammar
+    private pos: number;    // Index into source code buffer
+    private tokenStart: number; // Start of current token beeing analyzed by lexer
 
     constructor(private SourceCode: string) {
 
@@ -52,6 +54,14 @@ class PythonCoreTokenizer {
                 [ "yield",      TokenKind.Py_Yield ]
             ]
         );
+
+        this.pos = 0;
+        this.tokenStart = 0;
+    }
+
+    private getChar() : string {
+        if (this.pos >= this.SourceCode.length || this.pos < 0) return "\0";
+        return this.SourceCode.charAt(this.pos++);
     }
 
     advance() : Token {
