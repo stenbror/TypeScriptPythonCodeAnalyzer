@@ -156,11 +156,11 @@ class PythonCoreParser {
         this.lexer = lexer;
     }
 
-    advance() : void {
+    private advance() : void {
         this.curSymbol = this.lexer.advance();
     }
 
-    parseAtom() : ASTNode {
+    private parseAtom() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const op1 = this.curSymbol;
         switch (this.curSymbol.getKind())
@@ -269,7 +269,7 @@ class PythonCoreParser {
         }
     }
 
-    parseAtomExpr() : ASTNode {
+    private parseAtomExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Async) {
             const op1 = this.curSymbol;
@@ -289,7 +289,7 @@ class PythonCoreParser {
         return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes);
     }
 
-    parsePower() : ASTNode {
+    private parsePower() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseAtomExpr();
         if (this.curSymbol.getKind() === TokenKind.Py_Power) {
@@ -301,7 +301,7 @@ class PythonCoreParser {
         return left;
     }
 
-    parseFactor() : ASTNode {
+    private parseFactor() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const op1 = this.curSymbol;
         switch (op1.getKind()) {
@@ -322,7 +322,7 @@ class PythonCoreParser {
         }
     }
 
-    parseTerm() : ASTNode {
+    private parseTerm() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseFactor();
         while (this.curSymbol.getKind() in [ TokenKind.Py_Mul, TokenKind.Py_Div, TokenKind.Py_FloorDiv, TokenKind.Py_Modulo, TokenKind.Py_Matrice ]) {
@@ -350,7 +350,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseArith() : ASTNode {
+    private parseArith() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseTerm();
         while (this.curSymbol.getKind() in [ TokenKind.Py_Plus, TokenKind.Py_Minus ]) {
@@ -369,7 +369,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseShiftExpr() : ASTNode {
+    private parseShiftExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseArith();
         while (this.curSymbol.getKind() in [ TokenKind.Py_ShiftLeft, TokenKind.Py_ShiftRight ]) {
@@ -388,7 +388,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseAndExpr() : ASTNode {
+    private parseAndExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseShiftExpr();
         while (this.curSymbol.getKind() === TokenKind.Py_BitAnd) {
@@ -400,7 +400,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseXorExpr() : ASTNode {
+    private parseXorExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseAndExpr();
         while (this.curSymbol.getKind() === TokenKind.Py_BitXor) {
@@ -412,7 +412,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseOrExpr() : ASTNode {
+    private parseOrExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseXorExpr();
         while (this.curSymbol.getKind() === TokenKind.Py_BitOr) {
@@ -424,7 +424,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseStarExpr() : ASTNode {
+    private parseStarExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Mul) {
             const op1 = this.curSymbol;
@@ -435,7 +435,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(startPos, "Missing '*' in star expression!", this.curSymbol);
     }
 
-    parseComparisonExpr() : ASTNode {
+    private parseComparisonExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseOrExpr();
         while (this.curSymbol.getKind() in [ TokenKind.Py_Less, TokenKind.Py_LessEqual, TokenKind.Py_Equal, TokenKind.Py_GreaterEqual, TokenKind.Py_Greater, TokenKind.Py_NotEqual, TokenKind.Py_Is, TokenKind.Py_In, TokenKind.Py_Not ]) {
@@ -507,7 +507,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseNotTest() : ASTNode {
+    private parseNotTest() : ASTNode {
         if (this.curSymbol.getKind() === TokenKind.Py_Not) {
             const startPos = this.curSymbol.getStartPosition();
             const op1 = this.curSymbol;
@@ -518,7 +518,7 @@ class PythonCoreParser {
         return this.parseComparisonExpr();
     }
 
-    parseAndTest() : ASTNode {
+    private parseAndTest() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseNotTest();
         while (this.curSymbol.getKind() === TokenKind.Py_And) {
@@ -530,7 +530,7 @@ class PythonCoreParser {
         return res;
     }
 
-    parseOrTest() : ASTNode {
+    private parseOrTest() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let res = this.parseAndTest();
         while (this.curSymbol.getKind() === TokenKind.Py_Or) {
@@ -542,14 +542,14 @@ class PythonCoreParser {
         return res;
     }
 
-    parseLambdaExpr(isCond: boolean) : ASTNode {
+    private parseLambdaExpr(isCond: boolean) : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Lambda) {
             let left = new ASTNode();
             const op1 = this.curSymbol;
             this.advance();
             if (this.curSymbol.getKind() != TokenKind.Py_Colon) {
-                left = new ASTNode(); // this.parseVarArgsList();
+                left = this.parseVarArgsListStmt();
             }
             if (this.curSymbol.getKind() != TokenKind.Py_Colon) {
                 throw new SyntaxErrorException(startPos, "Missing ':' in 'lambda' expression!", this.curSymbol);
@@ -569,14 +569,14 @@ class PythonCoreParser {
         throw new SyntaxErrorException(startPos, "Missing 'lambda' keyword in 'lambda' expression!", this.curSymbol);
     }
 
-    parseTestNoCond() : ASTNode {
+    private parseTestNoCond() : ASTNode {
         if (this.curSymbol.getKind() === TokenKind.Py_Lambda) {
             return this.parseLambdaExpr(false);
         }
         return this.parseOrTest();
     }
 
-    parseTest() : ASTNode {
+    private parseTest() : ASTNode {
         if (this.curSymbol.getKind() === TokenKind.Py_Lambda) {
             return this.parseLambdaExpr(true);
         }
@@ -597,7 +597,7 @@ class PythonCoreParser {
         return left;
     }
 
-    parseNamedExpr() : ASTNode {
+    private parseNamedExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseTest();
         if (this.curSymbol.getKind() === TokenKind.Py_ColonAssign) {
@@ -609,7 +609,7 @@ class PythonCoreParser {
         return left;
     }
 
-    parseTestListComp() : ASTNode {
+    private parseTestListComp() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes : ASTNode[] = [];
         const commas : Token[] = [];
@@ -644,7 +644,7 @@ class PythonCoreParser {
         return new ASTTestListCompNode(startPos, this.curSymbol.getStartPosition(), nodes, commas);
     }
 
-    parseTrailer() : ASTNode {
+    private parseTrailer() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Dot: {
@@ -690,7 +690,7 @@ class PythonCoreParser {
         }
     }
 
-    parseSubscriptList() : ASTNode {
+    private parseSubscriptList() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes : ASTNode[] = [];
         const separators : Token[] = [];
@@ -704,7 +704,7 @@ class PythonCoreParser {
         return new ASTSubscriptListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
-    parseSubscript() : ASTNode {
+    private parseSubscript() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         let from = new ASTNode();
         let op1 = new Token(-1, -1, TokenKind.Empty, []);
@@ -725,7 +725,7 @@ class PythonCoreParser {
         return new ASTSubscriptNode(startPos, this.curSymbol.getStartPosition(), from, op1, to, op2, step);
     }
 
-    parseExprList() : ASTNode {
+    private parseExprList() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes : ASTNode[] = [];
         const separators : Token[] = [];
@@ -749,7 +749,7 @@ class PythonCoreParser {
         return new ASTExprListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
-    parseTestList() : ASTNode {
+    private parseTestList() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes : ASTNode[] = [];
         const separators : Token[] = [];
@@ -768,7 +768,7 @@ class PythonCoreParser {
         return new ASTTestListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
-    parseDictorSetMaker() : ASTNode {
+    private parseDictorSetMaker() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const keys : ASTNode[] = [];
         const colons : Token[] = [];
@@ -847,7 +847,7 @@ class PythonCoreParser {
         return new ASTSetContainerNode(startPos, this.curSymbol.getStartPosition(), keys, separators);
     }
 
-    parseCompIter() : ASTNode {
+    private parseCompIter() : ASTNode {
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Async:
             case TokenKind.Py_For:
@@ -859,7 +859,7 @@ class PythonCoreParser {
         }
     }
 
-    parseCompSyncCompFor() : ASTNode {
+    private parseCompSyncCompFor() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_For) {
             const op1 = this.curSymbol;
@@ -882,7 +882,7 @@ class PythonCoreParser {
         return new ASTNode();
     }
 
-    parseCompFor() : ASTNode {
+    private parseCompFor() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Async) {
             const op1 = this.curSymbol;
@@ -893,7 +893,7 @@ class PythonCoreParser {
         return this.parseCompSyncCompFor();
     }
 
-    parseCompIf() : ASTNode {
+    private parseCompIf() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_If) {
             const op1 = this.curSymbol;
@@ -908,7 +908,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'if' in if comprehension expression!", this.curSymbol);
     }
 
-    parseYieldExpr() : ASTNode {
+    private parseYieldExpr() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Yield) {
             const op1 = this.curSymbol;
@@ -932,7 +932,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'yield' in yield expression!", this.curSymbol);
     }
 
-    parseArgList() : ASTNode {
+    private parseArgList() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes : ASTNode[] = [];
         const separators : Token[] = [];
@@ -946,7 +946,7 @@ class PythonCoreParser {
         return new ASTArgListNode(startPos, this.curSymbol.getStartPosition(),nodes, separators);
     }
 
-    parseArgument() : ASTNode {
+    private parseArgument() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Mul:
@@ -978,7 +978,7 @@ class PythonCoreParser {
         }
     }
 
-    parseCompoundStmt() : ASTNode {
+    private parseCompoundStmt() : ASTNode {
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Async:
                 return this.parseAsyncStmt();
@@ -1003,7 +1003,7 @@ class PythonCoreParser {
         }
     }
 
-    parseClassStmt() : ASTNode {
+    private parseClassStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Class) {
             const op1 = this.curSymbol;
@@ -1040,7 +1040,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'class' in class declaration!", this.curSymbol);
     }
 
-    parseAsyncStmt() : ASTNode {
+    private parseAsyncStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Async) {
             const op1 = this.curSymbol;
@@ -1065,7 +1065,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'async' statement!", this.curSymbol);
     }
 
-    parseIfStmt() : ASTNode {
+    private parseIfStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const elifNodes: ASTNode[] = [];
         let elseNode = new ASTNode();
@@ -1101,7 +1101,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'if' statement!", this.curSymbol);
     }
 
-    parseElseStmt() : ASTNode {
+    private parseElseStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Else) {
             const op1 = this.curSymbol;
@@ -1117,7 +1117,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'else' statement!", this.curSymbol);
     }
 
-    parseWhileStmt() : ASTNode {
+    private parseWhileStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_While) {
             const op1 = this.curSymbol;
@@ -1138,7 +1138,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'while' in while statement!", this.curSymbol);
     }
 
-    parseForStmt() : ASTNode {
+    private parseForStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_For) {
             const op1 = this.curSymbol;
@@ -1170,7 +1170,7 @@ class PythonCoreParser {
         return new ASTNode();
     }
 
-    parseTryStmt() : ASTNode {
+    private parseTryStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Try) {
             const op1 = this.curSymbol;
@@ -1217,7 +1217,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'try' statement!", this.curSymbol);
     }
 
-    parseWithStmt() : ASTNode {
+    private parseWithStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_With) {
             const op1 = this.curSymbol;
@@ -1249,7 +1249,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'with' statement!", this.curSymbol);
     }
 
-    parseWithItemStmt() : ASTNode {
+    private parseWithItemStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseTest();
         if (this.curSymbol.getKind() === TokenKind.Py_As) {
@@ -1261,7 +1261,7 @@ class PythonCoreParser {
         return new ASTWithItemNode(startPos, this.curSymbol.getStartPosition(), left, new Token(-1, -1, TokenKind.Empty, []), new ASTNode());
     }
 
-    parseExceptStmt() : ASTNode {
+    private parseExceptStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Except) {
             const op1 = this.curSymbol;
@@ -1294,7 +1294,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'except' statement!", this.curSymbol);
     }
 
-    parseSuiteStmt() : ASTNode {
+    private parseSuiteStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Newline) {
             const op1 = this.curSymbol;
@@ -1316,7 +1316,7 @@ class PythonCoreParser {
         return this.parseSimpleStmt();
     }
 
-    parseStmt() : ASTNode {
+    private parseStmt() : ASTNode {
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Matrice:
             case TokenKind.Py_Async:
@@ -1333,7 +1333,7 @@ class PythonCoreParser {
         }
     }
 
-    parseSimpleStmt() : ASTNode {
+    private parseSimpleStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
@@ -1349,7 +1349,7 @@ class PythonCoreParser {
         return new ASTSimpleStmtNode(startPos, this.curSymbol.getEndPosition(), nodes, separators, op1);
     }
 
-    parseSmallStmt() : ASTNode {
+    private parseSmallStmt() : ASTNode {
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Del:
                 return this.parseDelStmt();
@@ -1375,7 +1375,7 @@ class PythonCoreParser {
         }
     }
 
-    parseExprStmt() : ASTNode {
+    private parseExprStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseTestListStarExprStmt();
         switch (this.curSymbol.getKind()) {
@@ -1499,7 +1499,7 @@ class PythonCoreParser {
         }
     }
 
-    parseAnnAssignStmt() : ASTNode {
+    private parseAnnAssignStmt() : ASTNode {
         if (this.curSymbol.getKind() === TokenKind.Py_Colon) {
             const startPos = this.curSymbol.getStartPosition();
             const op1 = this.curSymbol;
@@ -1510,7 +1510,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting ':' in annotated statement!", this.curSymbol);
     }
 
-    parseTestListStarExprStmt() : ASTNode {
+    private parseTestListStarExprStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
@@ -1546,7 +1546,7 @@ class PythonCoreParser {
         return new ASTTestListStarExprNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
-    parseDelStmt() : ASTNode {
+    private parseDelStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Del) {
             const op1 = this.curSymbol;
@@ -1557,7 +1557,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'del' in del statement!", this.curSymbol);
     }
 
-    parsePassStmt() : ASTNode {
+    private parsePassStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Pass) {
             const op1 = this.curSymbol;
@@ -1567,7 +1567,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'pass' in pass statement!", this.curSymbol);
     }
 
-    parseFlowStmt() : ASTNode {
+    private parseFlowStmt() : ASTNode {
         if (this.flowLevel > 0) {
             switch (this.curSymbol.getKind()) {
                 case TokenKind.Py_Break:
@@ -1587,7 +1587,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting flow statement inside looping or function statement!", this.curSymbol);
     }
 
-    parseBreakStmt() : ASTNode {
+    private parseBreakStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Break) {
             const op1 = this.curSymbol;
@@ -1597,7 +1597,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'break' in break statement!", this.curSymbol);
     }
 
-    parseContinueStmt() : ASTNode {
+    private parseContinueStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Continue) {
             const op1 = this.curSymbol;
@@ -1607,7 +1607,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'continue' in continue statement!", this.curSymbol);
     }
 
-    parseReturnStmt() : ASTNode {
+    private parseReturnStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Return) {
             const op1 = this.curSymbol;
@@ -1621,11 +1621,11 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'return' in return statement!", this.curSymbol);
     }
 
-    parseYieldStmt() : ASTNode {
+    private parseYieldStmt() : ASTNode {
         return this.parseYieldExpr();
     }
 
-    parseRaiseStmt() : ASTNode {
+    private parseRaiseStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Raise) {
             const op1 = this.curSymbol;
@@ -1645,7 +1645,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'raise' in raise statement!", this.curSymbol);
     }
 
-    parseImportStmt() : ASTNode {
+    private parseImportStmt() : ASTNode {
         switch (this.curSymbol.getKind()) {
             case TokenKind.Py_Import:
                 return this.parseImportNameStmt();
@@ -1657,7 +1657,7 @@ class PythonCoreParser {
         return new ASTNode();
     }
 
-    parseImportNameStmt() : ASTNode {
+    private parseImportNameStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Global) {
             const op1 = this.curSymbol;
@@ -1668,7 +1668,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'import' in import statement!", this.curSymbol);
     }
 
-    parseImportFromStmt() : ASTNode {
+    private parseImportFromStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_From) {
             const op1 = this.curSymbol;
@@ -1715,7 +1715,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'from' in import statement!", this.curSymbol);
     }
 
-    parseImportAsNameStmt() : ASTNode {
+    private parseImportAsNameStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Name) {
             const left = this.curSymbol;
@@ -1735,7 +1735,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME literal in import statement!", this.curSymbol);
     }
 
-    parseDottedAsNameStmt() : ASTNode {
+    private parseDottedAsNameStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseDottedNameStmt();
         if (this.curSymbol.getKind() === TokenKind.Py_As) {
@@ -1751,7 +1751,7 @@ class PythonCoreParser {
         return left;
     }
 
-    parseImportAsNamesStmt() : ASTNode {
+    private parseImportAsNamesStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
@@ -1765,7 +1765,7 @@ class PythonCoreParser {
         return new ASTImportAsNamesNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
-    parseDottedAsNamesStmt() : ASTNode {
+    private parseDottedAsNamesStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
@@ -1778,7 +1778,7 @@ class PythonCoreParser {
         return new ASTDottedAsNamesNode(startPos, this.curSymbol.getStartPosition(), nodes, separators);
     }
 
-    parseDottedNameStmt() : ASTNode {
+    private parseDottedNameStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: Token[] = [];
         const dots: Token[] = [];
@@ -1799,7 +1799,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME Literal in dotted name statement!", this.curSymbol);
     }
 
-    parseGlobalStmt() : ASTNode {
+    private parseGlobalStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Global) {
             const op1 = this.curSymbol;
@@ -1825,7 +1825,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'global' in global statement!", this.curSymbol);
     }
 
-    parseNonlocalStmt() : ASTNode {
+    private parseNonlocalStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Nonlocal) {
             const op1 = this.curSymbol;
@@ -1851,7 +1851,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'nonlocal' in nonlocal statement!", this.curSymbol);
     }
 
-    parseAssertStmt() : ASTNode {
+    private parseAssertStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Assert) {
             const op1 = this.curSymbol;
@@ -1868,7 +1868,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'assert' in assert statement!", this.curSymbol);
     }
 
-    parseSingleInputStmt() : ASTNode {
+    public parseSingleInputStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         this.advance();
         switch (this.curSymbol.getKind()) {
@@ -1895,7 +1895,7 @@ class PythonCoreParser {
         }
     }
 
-    parseFileInputStmt() : ASTNode {
+    public parseFileInputStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const newlines: Token[] = [];
@@ -1912,7 +1912,7 @@ class PythonCoreParser {
         return new ASTFileInputNode(startPos, this.curSymbol.getStartPosition(), nodes, newlines, this.curSymbol);
     }
 
-    parseEvalInputStmt() : ASTNode {
+    public parseEvalInputStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const newlines: Token[] = [];
         this.advance();
@@ -1927,7 +1927,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting EOF after statement!", this.curSymbol);
     }
 
-    parseAsyncFuncDefStmt() : ASTNode {
+    private parseAsyncFuncDefStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Async) {
             const op1 = this.curSymbol;
@@ -1938,7 +1938,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'async' in async def statement!", this.curSymbol);
     }
 
-    parseDecoratedStmt() : ASTNode {
+    private parseDecoratedStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
             const left = this.parseDecoratorsStmt();
@@ -1962,7 +1962,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '@' in decorated statement!", this.curSymbol);
     }
 
-    parseDecoratorsStmt() : ASTNode {
+    private parseDecoratorsStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         if (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
@@ -1974,7 +1974,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '@' in decorated statement!", this.curSymbol);
     }
 
-    parseDecoratorStmt() : ASTNode {
+    private parseDecoratorStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Matrice) {
             const op1 = this.curSymbol;
@@ -2005,7 +2005,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '@' in decorated statement!", this.curSymbol);
     }
 
-    parseFuncDefStmt() : ASTNode {
+    private parseFuncDefStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_Def) {
             const op1 = this.curSymbol;
@@ -2039,7 +2039,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting 'def' in def statement!", this.curSymbol);
     }
 
-    parseParametersStmt() : ASTNode {
+    private parseParametersStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
             const op1 = this.curSymbol;
@@ -2060,7 +2060,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '(' in parameter!", this.curSymbol);
     }
 
-    parseTFPAssignStmt() : ASTNode {
+    private parseTFPAssignStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseTFPDefStmt();
         if (this.curSymbol.getKind() === TokenKind.Py_Assign) {
@@ -2072,7 +2072,7 @@ class PythonCoreParser {
         return left;
     }
 
-    parseTypedArgsListStmt() : ASTNode {
+    private parseTypedArgsListStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
@@ -2298,7 +2298,7 @@ class PythonCoreParser {
         return new ASTTypedArgsListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators, div, mul, mulNode, power, powerNode, tc);
     }
 
-    parseTFPDefStmt() : ASTNode {
+    private parseTFPDefStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Name) {
             const op1 = this.curSymbol;
@@ -2314,7 +2314,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME as argument!", this.curSymbol);
     }
 
-    parseVarArgsListStmt() : ASTNode {
+    private parseVarArgsListStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
@@ -2413,7 +2413,7 @@ class PythonCoreParser {
         return new ASTVarArgsListNode(startPos, this.curSymbol.getStartPosition(), nodes, separators, div, mul, mulNode, power, powerNode);
     }
 
-    parseVFPAssignStmt() : ASTNode {
+    private parseVFPAssignStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const left = this.parseVFPDefStmt();
         if (this.curSymbol.getKind() === TokenKind.Py_Assign) {
@@ -2425,7 +2425,7 @@ class PythonCoreParser {
         return left;
     }
 
-    parseVFPDefStmt() : ASTNode {
+    private parseVFPDefStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Name) {
             const op1 = this.curSymbol;
@@ -2435,7 +2435,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting NAME as argument!", this.curSymbol);
     }
 
-    parseFuncBodySuiteStmt() : ASTNode {
+    private parseFuncBodySuiteStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Newline) {
             const op1 = this.curSymbol;
@@ -2468,7 +2468,7 @@ class PythonCoreParser {
         return this.parseSimpleStmt();
     }
 
-    parseFuncTypeInputStmt() : ASTNode {
+    public parseFuncTypeInputStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const newlines: Token[] = [];
         this.advance();
@@ -2483,7 +2483,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting EOF after statement!", this.curSymbol);
     }
 
-    parseFuncTypeStmt() : ASTNode {
+    private parseFuncTypeStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         if (this.curSymbol.getKind() === TokenKind.Py_LeftParen) {
             const op1 = this.curSymbol;
@@ -2508,7 +2508,7 @@ class PythonCoreParser {
         throw new SyntaxErrorException(this.curSymbol.getStartPosition(), "Expecting '(' in type expression!", this.curSymbol);
     }
 
-    parseTypeListStmt() : ASTNode {
+    private parseTypeListStmt() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const nodes: ASTNode[] = [];
         const separators: Token[] = [];
