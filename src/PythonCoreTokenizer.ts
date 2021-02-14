@@ -6,6 +6,12 @@
 
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 
+export class LexicalErrorException extends Error {
+    constructor(private Position: number, private text: string) {
+        super(text);
+        Object.setPrototypeOf(this, LexicalErrorException.prototype);
+    }
+}
 
 class PythonCoreTokenizer {
 
@@ -204,6 +210,22 @@ class PythonCoreTokenizer {
                 }
                 return TokenKind.Py_BitXor;
             }
+            case "=": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_Equal;
+                }
+                return TokenKind.Py_Assign;
+            }
+            case "!": {
+                this.ch = this.getChar();
+                if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_NotEqual;
+                }
+                throw new LexicalErrorException(this.pos, "Expecting '!=', buf found only '!'");
+            }
             case "~": {
                 this.ch = this.getChar();
                 return TokenKind.Py_BitInvert;
@@ -231,6 +253,26 @@ class PythonCoreTokenizer {
             case "}": {
                 this.ch = this.getChar();
                 return TokenKind.Py_RightCurly;
+            }
+            case ",": {
+                this.ch = this.getChar();
+                return TokenKind.Py_Comma;
+            }
+            case ";": {
+                this.ch = this.getChar();
+                return TokenKind.Py_SemiColon;
+            }
+            case ".": {
+                this.ch = this.getChar();
+                if (this.ch === ".") {
+                    this.ch = this.getChar();
+                    if (this.ch === ".") {
+                        this.ch = this.getChar();
+                        return TokenKind.Py_Elipsis;
+                    }
+                    this.pos--;
+                }
+                return TokenKind.Py_Dot;
             }
 
             default:
