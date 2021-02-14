@@ -280,6 +280,39 @@ class PythonCoreTokenizer {
         }
     }
 
+    isStartChar() : boolean {
+        if (this.ch >= "a" && this.ch <= "z") return true;
+        else if (this.ch >= "A" && this.ch <= "Z") return true;
+        else if (this.ch === "_") return true;
+        return false;
+    }
+
+    isLetterCharOrDigit() : boolean {
+        if (this.isStartChar()) return true;
+        else if (this.ch >= "0" && this.ch <= "9") return true;
+        return false;
+    }
+
+    indentifierOrReservedKeyword() : TokenKind {
+        this.tokenStart = this.pos;
+        if (this.isStartChar()) {
+            this.ch = this.getChar();
+            while (this.isLetterCharOrDigit()) {
+                this.ch = this.getChar();
+            }
+            const buf = this.SourceCode.substring(this.tokenStart, this.pos);
+            if (this.keywords.has(buf)) {
+                const res = this.keywords.get(buf);
+                if (res !== undefined) {
+                    return res;
+                }
+                return TokenKind.Name;
+            }
+            return TokenKind.Name;
+        }
+        return TokenKind.Empty;
+    }
+
     advance() : Token {
         return new Token(-1, -1, TokenKind.Empty, []);
     }
