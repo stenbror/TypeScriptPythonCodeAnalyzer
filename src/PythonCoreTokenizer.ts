@@ -12,6 +12,7 @@ class PythonCoreTokenizer {
     private keywords: Map<string, TokenKind>;   // Reserved keywords in Python grammar
     private pos: number;    // Index into source code buffer
     private tokenStart: number; // Start of current token beeing analyzed by lexer
+    private ch: string; // Current character to be analuzed in lexer.
 
     constructor(private SourceCode: string) {
 
@@ -57,11 +58,56 @@ class PythonCoreTokenizer {
 
         this.pos = 0;
         this.tokenStart = 0;
+        this.ch = "";
     }
 
     private getChar() : string {
         if (this.pos >= this.SourceCode.length || this.pos < 0) return "\0";
         return this.SourceCode.charAt(this.pos++);
+    }
+
+    private operatorOrDelimiter() : TokenKind {
+        switch (this.ch) {
+            case "<": {
+                this.ch = this.getChar();
+                if (this.ch === "<") {
+                    this.ch = this.getChar();
+                    if (this.ch === "=" ) {
+                        this.ch = this.getChar();
+                        return TokenKind.Py_ShiftLeftAssign;
+                    }
+                    return TokenKind.Py_ShiftLeft;
+                }
+                else if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_LessEqual;
+                }
+                else if (this.ch === ">" ) {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_NotEqual;
+                }
+                else return TokenKind.Py_Less;
+            }
+            case ">": {
+                this.ch = this.getChar();
+                if (this.ch === ">") {
+                    this.ch = this.getChar();
+                    if (this.ch === "=" ) {
+                        this.ch = this.getChar();
+                        return TokenKind.Py_ShiftRightAssign;
+                    }
+                    return TokenKind.Py_ShiftRight;
+                }
+                else if (this.ch === "=") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_GreaterEqual;
+                }
+                else return TokenKind.Py_Greater;
+            }
+
+            default:
+                return TokenKind.Empty;
+        }
     }
 
     advance() : Token {
