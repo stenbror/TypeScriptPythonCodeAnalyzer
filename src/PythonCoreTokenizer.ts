@@ -349,7 +349,18 @@ class PythonCoreTokenizer {
         }
 
 
-        return new Token(-1, -1, TokenKind.Empty, []);
+
+
+
+        /* Operator or delimiters */
+        {
+            const kind = this.operatorOrDelimiter();
+            if (kind !== TokenKind.Empty) {
+                return new Token(this.tokenStart, this.pos, kind, []);
+            }
+        }
+
+        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in sourcecode!`);
     }
 }
 
