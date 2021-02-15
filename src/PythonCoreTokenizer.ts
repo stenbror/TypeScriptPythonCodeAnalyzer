@@ -19,6 +19,7 @@ class PythonCoreTokenizer {
     private pos: number;    // Index into source code buffer
     private tokenStart: number; // Start of current token beeing analyzed by lexer
     private ch: string; // Current character to be analuzed in lexer.
+    private parensStack: TokenKind[];
 
     constructor(private SourceCode: string) {
 
@@ -65,6 +66,7 @@ class PythonCoreTokenizer {
         this.pos = 0;
         this.tokenStart = 0;
         this.ch = this.SourceCode[this.pos];
+        this.parensStack = [];
     }
 
     private getChar() : string {
@@ -356,6 +358,26 @@ class PythonCoreTokenizer {
         {
             const kind = this.operatorOrDelimiter();
             if (kind !== TokenKind.Empty) {
+                switch (kind) {
+                    case TokenKind.Py_LeftParen:
+                    case TokenKind.Py_LeftBracket:
+                    case TokenKind.Py_LeftCurly:
+                        this.parensStack.push(kind);
+                        break;
+                    case TokenKind.Py_RightParen:
+                    case TokenKind.Py_RightBracket:
+                    case TokenKind.Py_RightCurly: {
+                        const openParens = this.parensStack.pop();
+                        if ( (openParens === TokenKind.Py_LeftParen && kind === TokenKind.Py_RightParen) ||
+                             (openParens === TokenKind.Py_LeftBracket && kind === TokenKind.Py_RightBracket) ||
+                             (openParens === TokenKind.Py_LeftCurly && kind === TokenKind.Py_RightCurly) ) {
+                                throw new LexicalErrorException(this.pos, "No matching parenthezis found!");
+                            } 
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 return new Token(this.tokenStart, this.pos, kind, []);
             }
         }
