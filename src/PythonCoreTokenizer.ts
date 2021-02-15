@@ -64,7 +64,7 @@ class PythonCoreTokenizer {
 
         this.pos = 0;
         this.tokenStart = 0;
-        this.ch = "";
+        this.ch = this.SourceCode[this.pos];
     }
 
     private getChar() : string {
@@ -331,6 +331,24 @@ class PythonCoreTokenizer {
     }
 
     public advance() : Token {
+
+
+
+
+        /* Check for reserved keyword or name literal */
+        if (this.isStartChar()) {
+            const kind = this.indentifierOrReservedKeyword();
+            if (kind !== TokenKind.Empty) {
+                if (kind === TokenKind.Name) {
+                    return new NameLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+                }
+                else {
+                    return new Token(this.tokenStart, this.pos, kind, []);
+                }
+            }
+        }
+
+
         return new Token(-1, -1, TokenKind.Empty, []);
     }
 }
