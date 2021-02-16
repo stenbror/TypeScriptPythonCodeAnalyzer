@@ -373,12 +373,14 @@ class PythonCoreTokenizer {
                         const openParens = this.parensStack.length > 0 ? this.parensStack.pop() : TokenKind.Empty;
                         if ( (openParens === TokenKind.Py_LeftParen && kind === TokenKind.Py_RightParen) ||
                              (openParens === TokenKind.Py_LeftBracket && kind === TokenKind.Py_RightBracket) ||
-                             (openParens === TokenKind.Py_LeftCurly && kind === TokenKind.Py_RightCurly) ||
-                              openParens === TokenKind.Empty ) {
-                                throw new LexicalErrorException(this.pos, "No matching parenthezis found!");
+                             (openParens === TokenKind.Py_LeftCurly && kind === TokenKind.Py_RightCurly) ) {
+                                break;
                             } 
+                        
+                        else {
+                            throw new LexicalErrorException(this.pos, "No matching parenthezis found!");
                         }
-                        break;
+                    }
                     default:
                         break;
                 }

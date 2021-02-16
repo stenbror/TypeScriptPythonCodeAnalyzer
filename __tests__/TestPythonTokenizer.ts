@@ -230,4 +230,111 @@ describe("PythonCore Tokenizer - Operators or Delimiters", () => {
         const lex = new PythonCoreTokenizer("+");
         expect(lex.advance().getKind()).toEqual(TokenKind.Py_Plus);
     });
+    test("Operator or Delimiter '-='", () => {
+        const lex = new PythonCoreTokenizer("-=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_MinusAssign);
+    });
+    test("Operator or Delimiter '->'", () => {
+        const lex = new PythonCoreTokenizer("->");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Arrow);
+    });
+    test("Operator or Delimiter '-'", () => {
+        const lex = new PythonCoreTokenizer("-");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Minus);
+    });
+    test("Operator or Delimiter '%='", () => {
+        const lex = new PythonCoreTokenizer("%=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_ModuloAssign);
+    });
+    test("Operator or Delimiter '%'", () => {
+        const lex = new PythonCoreTokenizer("%");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Modulo);
+    });
+    test("Operator or Delimiter '@='", () => {
+        const lex = new PythonCoreTokenizer("@=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_MatriceAssign);
+    });
+    test("Operator or Delimiter '@'", () => {
+        const lex = new PythonCoreTokenizer("@");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Matrice);
+    });
+    test("Operator or Delimiter '&='", () => {
+        const lex = new PythonCoreTokenizer("&=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitAndAssign);
+    });
+    test("Operator or Delimiter '&'", () => {
+        const lex = new PythonCoreTokenizer("&");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitAnd);
+    });
+    test("Operator or Delimiter '|='", () => {
+        const lex = new PythonCoreTokenizer("|=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitOrAssign);
+    });
+    test("Operator or Delimiter '|'", () => {
+        const lex = new PythonCoreTokenizer("|");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitOr);
+    });
+    test("Operator or Delimiter '^='", () => {
+        const lex = new PythonCoreTokenizer("^=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitXorAssign);
+    });
+    test("Operator or Delimiter '^'", () => {
+        const lex = new PythonCoreTokenizer("^");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitXor);
+    });
+    test("Operator or Delimiter '=='", () => {
+        const lex = new PythonCoreTokenizer("==");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Equal);
+    });
+    test("Operator or Delimiter '='", () => {
+        const lex = new PythonCoreTokenizer("=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Assign);
+    });
+    test("Operator or Delimiter '~'", () => {
+        const lex = new PythonCoreTokenizer("~");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_BitInvert);
+    });
+    test("Operator or Delimiter ','", () => {
+        const lex = new PythonCoreTokenizer(",");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Comma);
+    });
+    test("Operator or Delimiter ';'", () => {
+        const lex = new PythonCoreTokenizer(";");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_SemiColon);
+    });
+    test("Operator or Delimiter '...'", () => {
+        const lex = new PythonCoreTokenizer("...");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Elipsis);
+    });
+    test("Operator or Delimiter '.'", () => {
+        const lex = new PythonCoreTokenizer(".");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Dot);
+    });
+    test("Operator or Delimiter '('", () => {
+        const lex = new PythonCoreTokenizer("(");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_LeftParen);
+    });
+    test("Operator or Delimiter '['", () => {
+        const lex = new PythonCoreTokenizer("[");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_LeftBracket);
+    });
+    test("Operator or Delimiter '{'", () => {
+        const lex = new PythonCoreTokenizer("{");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_LeftCurly);
+    });
+    test("Operator or Delimiter ')'", () => {
+        const lex = new PythonCoreTokenizer("()");
+        lex.advance();
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_RightParen);
+    });
+    test("Operator or Delimiter ']'", () => {
+        const lex = new PythonCoreTokenizer("[]");
+        lex.advance();
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_RightBracket);
+    });
+    test("Operator or Delimiter '}'", () => {
+        const lex = new PythonCoreTokenizer("{}");
+        lex.advance();
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_RightCurly);
+    });
 });
