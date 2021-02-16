@@ -1,6 +1,6 @@
 
 import PythonCoreTokenizer from "../src/PythonCoreTokenizer";
-import { TokenKind } from "../src/Token";
+import { NameLiteral, TokenKind } from "../src/Token";
 
 describe("PythonCore Tokenizer - Reserved keywords", () => {
     test("Reserved keyword 'False'", () => {
@@ -336,5 +336,32 @@ describe("PythonCore Tokenizer - Operators or Delimiters", () => {
         const lex = new PythonCoreTokenizer("{}");
         lex.advance();
         expect(lex.advance().getKind()).toEqual(TokenKind.Py_RightCurly);
+    });
+});
+
+describe("PythonCore Tokenizer - Identifier", () => {
+    test("Identifier '__init__'", () => {
+        const lex = new PythonCoreTokenizer("__init__");
+        const node = <NameLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Name);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("__init__");
+    });
+    test("Identifier 'as4'", () => {
+        const lex = new PythonCoreTokenizer("as4");
+        const node = <NameLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Name);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("as4");
+    });
+    test("Identifier 'T44_xt'", () => {
+        const lex = new PythonCoreTokenizer("T44_xt");
+        const node = <NameLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Name);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual("T44_xt");
     });
 });

@@ -62,6 +62,10 @@ export class NameLiteral extends Token {
         super(startPos, endPos, TokenKind.Name, trivias);
         this.name = name;
     }
+
+    getContent() : string {
+        return this.name;
+    }
 }
 
 export class NumberLiteral extends Token {
