@@ -4,6 +4,7 @@
 // Implements Python grammar 3.9 in Typescript for code analyzing purposes of Python code.
 // Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
 
+import { Console } from "node:console";
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 
 export class LexicalErrorException extends Error {
@@ -65,13 +66,15 @@ class PythonCoreTokenizer {
 
         this.pos = 0;
         this.tokenStart = 0;
-        this.ch = this.SourceCode[this.pos];
+        this.ch = this.SourceCode[this.pos++];
         this.parensStack = [];
     }
 
     private getChar() : string {
-        if (this.pos >= this.SourceCode.length || this.pos < 0) return "\0";
-        return this.SourceCode.charAt(this.pos++);
+        if (this.pos < this.SourceCode.length) {
+            return this.SourceCode.charAt(this.pos++);
+        }
+        return "\0";
     }
 
     private operatorOrDelimiter() : TokenKind {
@@ -80,19 +83,19 @@ class PythonCoreTokenizer {
                 this.ch = this.getChar();
                 if (this.ch === "<") {
                     this.ch = this.getChar();
-                    if (this.ch === "=" ) {
+                    if (this.ch === "=") {
                         this.ch = this.getChar();
                         return TokenKind.Py_ShiftLeftAssign;
                     }
                     return TokenKind.Py_ShiftLeft;
                 }
+                else if (this.ch === ">") {
+                    this.ch = this.getChar();
+                    return TokenKind.Py_NotEqual;
+                }
                 else if (this.ch === "=") {
                     this.ch = this.getChar();
                     return TokenKind.Py_LessEqual;
-                }
-                else if (this.ch === ">" ) {
-                    this.ch = this.getChar();
-                    return TokenKind.Py_NotEqual;
                 }
                 return TokenKind.Py_Less;
             }
@@ -313,7 +316,7 @@ class PythonCoreTokenizer {
     }
 
     private indentifierOrReservedKeyword() : TokenKind {
-        this.tokenStart = this.pos;
+        this.tokenStart = this.pos - 1;
         if (this.isStartChar()) {
             this.ch = this.getChar();
             while (this.isLetterCharOrDigit()) {

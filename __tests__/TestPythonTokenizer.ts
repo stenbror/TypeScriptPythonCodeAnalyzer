@@ -143,4 +143,91 @@ describe("PythonCore Tokenizer - Reserved keywords", () => {
         const lex = new PythonCoreTokenizer("yield");
         expect(lex.advance().getKind()).toEqual(TokenKind.Py_Yield);
     });
-  });
+});
+
+describe("PythonCore Tokenizer - Operators or Delimiters", () => {
+    test("Operator or Delimiter '<<='", () => {
+        const lex = new PythonCoreTokenizer("<<= ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_ShiftLeftAssign);
+    });
+    test("Operator or Delimiter '<<'", () => {
+        const lex = new PythonCoreTokenizer("<< ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_ShiftLeft);
+    });
+    test("Operator or Delimiter '<>'", () => {
+        const lex = new PythonCoreTokenizer("<> ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_NotEqual);
+    });
+    test("Operator or Delimiter '<='", () => {
+        const lex = new PythonCoreTokenizer("<= ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_LessEqual);
+    });
+    test("Operator or Delimiter '<'", () => {
+        const lex = new PythonCoreTokenizer("< ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Less);
+    });
+    test("Operator or Delimiter '>>='", () => {
+        const lex = new PythonCoreTokenizer(">>= ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_ShiftRightAssign);
+    });
+    test("Operator or Delimiter '>>'", () => {
+        const lex = new PythonCoreTokenizer(">>");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_ShiftRight);
+    });
+    test("Operator or Delimiter '>='", () => {
+        const lex = new PythonCoreTokenizer(">= ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_GreaterEqual);
+    });
+    test("Operator or Delimiter '>'", () => {
+        const lex = new PythonCoreTokenizer("> ");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Greater);
+    });
+    test("Operator or Delimiter '**='", () => {
+        const lex = new PythonCoreTokenizer("**=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_PowerAssign);
+    });
+    test("Operator or Delimiter '**'", () => {
+        const lex = new PythonCoreTokenizer("**");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Power);
+    });
+    test("Operator or Delimiter '*='", () => {
+        const lex = new PythonCoreTokenizer("*=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_MulAssign);
+    });
+    test("Operator or Delimiter '*'", () => {
+        const lex = new PythonCoreTokenizer("*");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Mul);
+    });
+    test("Operator or Delimiter '//='", () => {
+        const lex = new PythonCoreTokenizer("//=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_FloorDivAssign);
+    });
+    test("Operator or Delimiter '//'", () => {
+        const lex = new PythonCoreTokenizer("//");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_FloorDiv);
+    });
+    test("Operator or Delimiter '/='", () => {
+        const lex = new PythonCoreTokenizer("/=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_DivAssign);
+    });
+    test("Operator or Delimiter '/'", () => {
+        const lex = new PythonCoreTokenizer("/");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Div);
+    });
+    test("Operator or Delimiter ':='", () => {
+        const lex = new PythonCoreTokenizer(":=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_ColonAssign);
+    });
+    test("Operator or Delimiter ':'", () => {
+        const lex = new PythonCoreTokenizer(":");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Colon);
+    });
+    test("Operator or Delimiter '+='", () => {
+        const lex = new PythonCoreTokenizer("+=");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_PlusAssign);
+    });
+    test("Operator or Delimiter '+'", () => {
+        const lex = new PythonCoreTokenizer("+");
+        expect(lex.advance().getKind()).toEqual(TokenKind.Py_Plus);
+    });
+});
