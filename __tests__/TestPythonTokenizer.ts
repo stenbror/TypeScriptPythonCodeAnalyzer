@@ -415,4 +415,28 @@ describe("PythonCore Tokenizer - Number", () => {
         expect(node.getEndPosition()).toEqual(6);
         expect(node.getContent()).toEqual("0X7F8e");
     });
+    test("Identifier '0o_71_14'", () => {
+        const lex = new PythonCoreTokenizer("0o_71_14");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("0o_71_14");
+    });
+    test("Identifier '0O_71_14'", () => {
+        const lex = new PythonCoreTokenizer("0O_71_14");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("0O_71_14");
+    });
+    test("Identifier '0o7114'", () => {
+        const lex = new PythonCoreTokenizer("0o7114");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual("0o7114");
+    });
 });

@@ -387,7 +387,20 @@ class PythonCoreTokenizer {
                 }
                 else if (this.ch === "o" || this.ch === "O") {
                     this.ch = this.getChar();
-
+                    do {
+                        if (this.ch === "_") {
+                            this.ch = this.getChar();
+                        }
+                        if (!this.isOctetDigit()) {
+                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in octet number!`);
+                        }
+                        do {
+                            this.ch = this.getChar();
+                        } while (this.isOctetDigit());
+                    } while (this.ch === "_");
+                    if (this.isDigit()) {
+                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in octet number!`);
+                    }
                 }
                 else if (this.ch === "b" || this.ch === "B") {
                     this.ch = this.getChar();
