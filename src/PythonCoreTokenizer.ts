@@ -373,7 +373,17 @@ class PythonCoreTokenizer {
                 this.ch = this.getChar();
                 if (this.ch === "x" || this.ch === "X") {
                     this.ch = this.getChar();
-
+                    do {
+                        if (this.ch === "_") {
+                            this.ch = this.getChar();
+                        }
+                        if (!this.isHexDigit()) {
+                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in hex number!`);
+                        }
+                        do {
+                            this.ch = this.getChar();
+                        } while (this.isHexDigit());
+                    } while (this.ch === "_");
                 }
                 else if (this.ch === "o" || this.ch === "O") {
                     this.ch = this.getChar();

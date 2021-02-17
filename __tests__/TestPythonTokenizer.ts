@@ -391,4 +391,28 @@ describe("PythonCore Tokenizer - Number", () => {
         expect(node.getEndPosition()).toEqual(8);
         expect(node.getContent()).toEqual("0B111011");
     });
+    test("Identifier '0x_7f_8e'", () => {
+        const lex = new PythonCoreTokenizer("0x_7f_8e");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("0x_7f_8e");
+    });
+    test("Identifier '0X_7F_8e'", () => {
+        const lex = new PythonCoreTokenizer("0X_7F_8e");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("0X_7F_8e");
+    });
+    test("Identifier '0X7F8e'", () => {
+        const lex = new PythonCoreTokenizer("0X7F8e");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual("0X7F8e");
+    });
 });
