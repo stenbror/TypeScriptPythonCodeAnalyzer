@@ -503,4 +503,68 @@ describe("PythonCore Tokenizer - Number", () => {
         expect(node.getEndPosition()).toEqual(3);
         expect(node.getContent()).toEqual("0.0");
     });
+    test("Identifier '.0'", () => {
+        const lex = new PythonCoreTokenizer(".0");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(2);
+        expect(node.getContent()).toEqual(".0");
+    });
+    test("Identifier '.0e1j'", () => {
+        const lex = new PythonCoreTokenizer(".0e1j");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(5);
+        expect(node.getContent()).toEqual(".0e1j");
+    });
+    test("Identifier '.0E1J'", () => {
+        const lex = new PythonCoreTokenizer(".0E1J");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(5);
+        expect(node.getContent()).toEqual(".0E1J");
+    });
+    test("Identifier '.0E+1J'", () => {
+        const lex = new PythonCoreTokenizer(".0E+1J");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual(".0E+1J");
+    });
+    test("Identifier '.0E-1J'", () => {
+        const lex = new PythonCoreTokenizer(".0E-1J");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual(".0E-1J");
+    });
+    test("Identifier '1234.456'", () => {
+        const lex = new PythonCoreTokenizer("1234.456");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("1234.456");
+    });
+    test("Identifier '1_2_3_4.4_5_6'", () => {
+        const lex = new PythonCoreTokenizer("1_2_3_4.4_5_6");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(13);
+        expect(node.getContent()).toEqual("1_2_3_4.4_5_6");
+    });
+    test("Identifier '.0E-1_1J'", () => {
+        const lex = new PythonCoreTokenizer(".0E-1_1J");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual(".0E-1_1J");
+    });
 });
