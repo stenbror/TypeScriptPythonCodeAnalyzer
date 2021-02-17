@@ -419,6 +419,77 @@ class PythonCoreTokenizer {
                         throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
                     }
                 }
+                else {
+                    let nonZero = false;
+
+                    if (this.ch !== ".") {
+
+                        let lock = true;
+                        while (lock) {
+                            do {
+                                if (this.isDigit() && this.ch != "0") nonZero = true;
+                                this.ch = this.getChar();
+                            } while (this.isDigit());
+                            if (this.ch != "_") {
+                                lock = false;
+                                break;
+                            }
+                            this.ch = this.getChar();
+                            if (!this.isDigit()) {
+                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                            }
+                        }
+                    }
+
+                    if (this.ch === ".") {
+                        this.ch = this.getChar();
+                        let lock = true;
+                        while (lock) {
+                            while (this.isDigit()) {
+                                this.ch = this.getChar();
+                            }
+                            if (this.ch != "_") {
+                                lock = false;
+                                break;
+                            }
+                            this.ch = this.getChar();
+                            if (!this.isDigit()) {
+                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                            }
+                        }
+                    }
+
+                    if (this.ch === "e" || this.ch === "E") {
+                        this.ch = this.getChar();
+                        if (this.ch === "+" || this.ch === "-") {
+                            this.ch = this.getChar();
+                            if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                        }
+                        else if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+
+                        let lock = true;
+                        while (lock) {
+                            while (this.isDigit()) {
+                                this.ch = this.getChar();
+                            }
+                            if (this.ch != "_") {
+                                lock = false;
+                                break;
+                            }
+                            this.ch = this.getChar();
+                            if (!this.isDigit()) {
+                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                            }
+                        }
+                    }
+
+                    if (this.ch === "j" || this.ch === "J") {
+                        this.ch = this.getChar();
+                    }
+
+
+                    if (nonZero) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number starting with '0' !`);
+                }
             } 
             else {  /* Decimal */
                 this.ch = this.getChar();
