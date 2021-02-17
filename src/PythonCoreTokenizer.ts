@@ -368,8 +368,43 @@ class PythonCoreTokenizer {
         }
 
         /* Handle Numbers */
+        if (this.isDigit() || this.ch === ".") {
+            if (this.ch === "0") {
+                this.ch = this.getChar();
+                if (this.ch === "x" || this.ch === "X") {
+                    this.ch = this.getChar();
 
+                }
+                else if (this.ch === "o" || this.ch === "O") {
+                    this.ch = this.getChar();
 
+                }
+                else if (this.ch === "b" || this.ch === "B") {
+                    this.ch = this.getChar();
+                    do {
+                        if (this.ch === "_") {
+                            this.ch = this.getChar();
+                        }
+                        if (!this.isBinaryDigit()) {
+                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
+                        }
+                        do {
+                            this.ch = this.getChar();
+                        } while (this.isBinaryDigit());
+                    } while (this.ch === "_");
+                    if (this.isDigit()) {
+                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
+                    }
+                }
+            } 
+            else {  /* Decimal */
+                this.ch = this.getChar();
+
+            }
+            return new NumberLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+        }
+
+        /* Handle string */
 
         /* Operator or delimiters */
         {

@@ -1,6 +1,6 @@
 
 import PythonCoreTokenizer from "../src/PythonCoreTokenizer";
-import { NameLiteral, TokenKind } from "../src/Token";
+import { NameLiteral, NumberLiteral, TokenKind } from "../src/Token";
 
 describe("PythonCore Tokenizer - Reserved keywords", () => {
     test("Reserved keyword 'False'", () => {
@@ -363,5 +363,32 @@ describe("PythonCore Tokenizer - Identifier", () => {
         expect(node.getStartPosition()).toEqual(0);
         expect(node.getEndPosition()).toEqual(6);
         expect(node.getContent()).toEqual("T44_xt");
+    });
+});
+
+describe("PythonCore Tokenizer - Number", () => {
+    test("Identifier '0b_111_011'", () => {
+        const lex = new PythonCoreTokenizer("0b_111_011");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(10);
+        expect(node.getContent()).toEqual("0b_111_011");
+    });
+    test("Identifier '0B_111_011'", () => {
+        const lex = new PythonCoreTokenizer("0B_111_011");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(10);
+        expect(node.getContent()).toEqual("0B_111_011");
+    });
+    test("Identifier '0B111011'", () => {
+        const lex = new PythonCoreTokenizer("0B111011");
+        const node = <NumberLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Number);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(8);
+        expect(node.getContent()).toEqual("0B111011");
     });
 });

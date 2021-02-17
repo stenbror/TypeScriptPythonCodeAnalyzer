@@ -75,6 +75,10 @@ export class NumberLiteral extends Token {
         super(startPos, endPos, TokenKind.Number, trivias);
         this.literal = literal;
     }
+
+    getContent() : string {
+        return this.literal;
+    }
 }
 
 export class StringLiteral extends Token {
