@@ -4,7 +4,6 @@
 // Implements Python grammar 3.9 in Typescript for code analyzing purposes of Python code.
 // Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
 
-import { Console } from "node:console";
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
 
 export class LexicalErrorException extends Error {
@@ -267,19 +266,7 @@ class PythonCoreTokenizer {
                 this.ch = this.getChar();
                 return TokenKind.Py_SemiColon;
             }
-            case ".": {
-                this.ch = this.getChar();
-                if (this.ch === ".") {
-                    this.ch = this.getChar();
-                    if (this.ch === ".") {
-                        this.ch = this.getChar();
-                        return TokenKind.Py_Elipsis;
-                    }
-                    this.pos--;
-                }
-                return TokenKind.Py_Dot;
-            }
-
+            
             default:
                 return TokenKind.Empty;
         }
@@ -295,6 +282,11 @@ class PythonCoreTokenizer {
     private isLetterCharOrDigit() : boolean {
         if (this.isStartChar()) return true;
         else if (this.ch >= "0" && this.ch <= "9") return true;
+        return false;
+    }
+
+    private isDigit() : boolean {
+        if (this.ch >= "0" && this.ch <= "9") return true;
         return false;
     }
 
@@ -353,7 +345,29 @@ class PythonCoreTokenizer {
             }
         }
 
+        /* Handle newline - Token or Trivia */
 
+        /* Period or start of Number */
+        if (this.ch === ".") {    
+            this.ch = this.getChar();
+            if (this.isDigit()) {
+                this.pos--;
+                this.ch = ".";
+            }
+            if (this.ch === ".") {
+                this.ch = this.getChar();
+                if (this.ch === ".") {
+                    this.ch = this.getChar();
+                    return new Token(this.tokenStart, this.pos, TokenKind.Py_Elipsis, []);
+                }
+                this.pos--;
+            }
+            else {
+                return new Token(this.tokenStart, this.pos, TokenKind.Py_Dot, []);
+            }
+        }
+
+        /* Handle Numbers */
 
 
 
