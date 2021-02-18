@@ -328,6 +328,54 @@ class PythonCoreTokenizer {
     }
 
     private handleString() : StringLiteral {
+        const quote = this.ch;
+        let quoteSize = 1;
+        let quoteEndSize = 0;
+        this.ch = this.getChar();
+        if (this.ch === quote) {
+            this.ch = this.getChar();
+            if (this.ch === quote) {
+                quoteSize = 3;
+                this.ch = this.getChar();
+            }
+            else {
+                quoteSize = 1;
+            }
+        }
+        while (quoteEndSize != quoteSize) {
+            if (this.ch === "\0") {
+                if (quoteSize !== 3) {
+                    throw new LexicalErrorException(this.pos, "End of file found inside single quote string!");
+                }
+                // Handle correct here!
+            }
+            if (quoteSize === 1 && this.ch in [ "\r", "\n" ]) {
+                throw new LexicalErrorException(this.pos, "Newline found inside single quote string!");
+            }
+            if (this.ch === quote) {
+                quoteSize++;
+            }
+            else {
+                quoteEndSize = 0;
+                if (this.ch === "\\") { // Line continutaion followed by newline in single quote strings are allowed
+                    this.ch = this.getChar();
+                    if (this.ch === "\r") {
+                        this.ch = this.getChar();
+                        if (this.ch === "\n") {
+                            this.ch = this.getChar();
+                        }
+                    }
+                    else if (this.ch === "\n") {
+                        this.ch = this.getChar();
+                    }
+                    else {
+                        throw new LexicalErrorException(this.pos, "Expecting Newline after '\\' inside single quote string!");
+                    }
+                }
+            }
+
+            this.ch = this.getChar();
+        }
 
         return new StringLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
     }
