@@ -586,4 +586,20 @@ describe("PythonCore Tokenizer - String", () => {
         expect(node.getEndPosition()).toEqual(2);
         expect(node.getContent()).toEqual("\"\"");
     });
+    test("Identifier \"\"\"\"\"\" ", () => {
+        const lex = new PythonCoreTokenizer("\"\"\"\"\"\"");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual("\"\"\"\"\"\"");
+    });
+    test("Identifier '''''' ", () => {
+        const lex = new PythonCoreTokenizer("''''''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(6);
+        expect(node.getContent()).toEqual("''''''");
+    });
 });

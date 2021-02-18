@@ -336,7 +336,6 @@ class PythonCoreTokenizer {
             this.ch = this.getChar();
             if (this.ch === quote) {
                 quoteSize = 3;
-                this.ch = this.getChar();
             }
             else {
                 quoteEndSize = 1;
@@ -353,7 +352,7 @@ class PythonCoreTokenizer {
                 throw new LexicalErrorException(this.pos, "Newline found inside single quote string!");
             }
             if (this.ch === quote) {
-                quoteSize++;
+                quoteEndSize++;
             }
             else {
                 quoteEndSize = 0;
@@ -373,7 +372,6 @@ class PythonCoreTokenizer {
                     }
                 }
             }
-
             this.ch = this.getChar();
         }
 
