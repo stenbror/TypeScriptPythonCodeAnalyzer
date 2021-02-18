@@ -88,6 +88,10 @@ export class StringLiteral extends Token {
         super(startPos, endPos, TokenKind.String, trivias);
         this.literal = literal;
     }
+
+    getContent() : string {
+        return this.literal;
+    }
 }
 
 export class TypeComment extends Token {

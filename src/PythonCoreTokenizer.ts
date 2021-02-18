@@ -339,7 +339,7 @@ class PythonCoreTokenizer {
                 this.ch = this.getChar();
             }
             else {
-                quoteSize = 1;
+                quoteEndSize = 1;
             }
         }
         while (quoteEndSize != quoteSize) {

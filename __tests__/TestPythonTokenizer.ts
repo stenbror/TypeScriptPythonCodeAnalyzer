@@ -1,6 +1,6 @@
 
 import PythonCoreTokenizer from "../src/PythonCoreTokenizer";
-import { NameLiteral, NumberLiteral, TokenKind } from "../src/Token";
+import { NameLiteral, NumberLiteral, StringLiteral, TokenKind } from "../src/Token";
 
 describe("PythonCore Tokenizer - Reserved keywords", () => {
     test("Reserved keyword 'False'", () => {
@@ -566,5 +566,24 @@ describe("PythonCore Tokenizer - Number", () => {
         expect(node.getStartPosition()).toEqual(0);
         expect(node.getEndPosition()).toEqual(8);
         expect(node.getContent()).toEqual(".0E-1_1J");
+    });
+});
+
+describe("PythonCore Tokenizer - String", () => {
+    test("Identifier '' ", () => {
+        const lex = new PythonCoreTokenizer("''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(2);
+        expect(node.getContent()).toEqual("''");
+    });
+    test("Identifier \"\" ", () => {
+        const lex = new PythonCoreTokenizer("\"\"");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(2);
+        expect(node.getContent()).toEqual("\"\"");
     });
 });
