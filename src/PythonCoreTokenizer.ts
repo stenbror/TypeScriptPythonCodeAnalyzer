@@ -327,6 +327,13 @@ class PythonCoreTokenizer {
         return TokenKind.Empty;
     }
 
+    private handleString() : StringLiteral {
+
+        return new StringLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+    }
+
+    // Public: Next token from source code. Parser calls this everytime it needs next token from source code ////////////////////
+
     public advance() : Token {
 
 
@@ -561,6 +568,7 @@ class PythonCoreTokenizer {
         }
 
         /* Handle string */
+        if (this.ch === "'" || this.ch === "\"") return this.handleString();
 
         /* Operator or delimiters */
         {
