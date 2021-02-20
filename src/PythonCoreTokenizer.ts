@@ -381,12 +381,35 @@ class PythonCoreTokenizer {
     // Public: Next token from source code. Parser calls this everytime it needs next token from source code ////////////////////
 
     public advance() : Token {
+        this.tokenStart = this.pos - 1;
 
 
 
-
-        /* Check for reserved keyword or name literal */
+        /* Check for reserved keyword or name literal or start of prefix for string */
         if (this.isStartChar()) {
+            /* Check for valid prefix to strings first */
+            this.tokenStart = this.pos - 1;
+            let saw_b = false;
+            let saw_u = false;
+            let saw_f = false;
+            let saw_r = false;
+            let lock = true;
+            while (lock) {
+                if (!(saw_b || saw_u || saw_f) && (this.ch === "b" || this.ch === "B")) saw_b = true;
+                else if (!(saw_b || saw_u || saw_f) && (this.ch === "u" || this.ch === "U")) saw_u = true;
+                else if (!(saw_r || saw_u) && (this.ch === "r" || this.ch === "R")) saw_r = true;
+                else if (!(saw_f || saw_b || saw_u) && (this.ch === "f" || this.ch === "F")) saw_f = true;
+                else {
+                    lock = false;
+                    break;
+                }
+                this.ch = this.getChar();
+                if (this.ch === "\"" || this.ch === "'") return this.handleString();
+            }
+            /* Reset to start of token again */
+            this.pos = this.tokenStart;
+            this.ch = this.getChar();
+
             const kind = this.indentifierOrReservedKeyword();
             if (kind !== TokenKind.Empty) {
                 if (kind === TokenKind.Name) {
