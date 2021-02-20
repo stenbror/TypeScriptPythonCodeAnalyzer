@@ -658,7 +658,6 @@ class PythonCoreTokenizer {
                              (openParens === TokenKind.Py_LeftCurly && kind === TokenKind.Py_RightCurly) ) {
                                 break;
                             } 
-                        
                         else {
                             throw new LexicalErrorException(this.pos, "No matching parenthezis found!");
                         }

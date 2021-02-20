@@ -618,4 +618,68 @@ describe("PythonCore Tokenizer - String", () => {
         expect(node.getEndPosition()).toEqual(14);
         expect(node.getContent()).toEqual("\"Test\\\r\nTest!\"");
     });
+    test("String r'' ", () => {
+        const lex = new PythonCoreTokenizer("r''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("r''");
+    });
+    test("String R\"\" ", () => {
+        const lex = new PythonCoreTokenizer("R\"\"");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("R\"\"");
+    });
+    test("String b'' ", () => {
+        const lex = new PythonCoreTokenizer("b''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("b''");
+    });
+    test("String B\"\" ", () => {
+        const lex = new PythonCoreTokenizer("B\"\"");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("B\"\"");
+    });
+    test("String u'' ", () => {
+        const lex = new PythonCoreTokenizer("u''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("u''");
+    });
+    test("String U\"\" ", () => {
+        const lex = new PythonCoreTokenizer("U\"\"");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("U\"\"");
+    });
+    test("String f'' ", () => {
+        const lex = new PythonCoreTokenizer("f''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("f''");
+    });
+    test("String F\"\" ", () => {
+        const lex = new PythonCoreTokenizer("F\"\"");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(3);
+        expect(node.getContent()).toEqual("F\"\"");
+    });
 });
