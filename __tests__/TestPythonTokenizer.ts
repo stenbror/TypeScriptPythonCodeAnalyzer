@@ -682,4 +682,68 @@ describe("PythonCore Tokenizer - String", () => {
         expect(node.getEndPosition()).toEqual(3);
         expect(node.getContent()).toEqual("F\"\"");
     });
+    test("String fr'' ", () => {
+        const lex = new PythonCoreTokenizer("fr''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("fr''");
+    });
+    test("String Fr'' ", () => {
+        const lex = new PythonCoreTokenizer("Fr''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("Fr''");
+    });
+    test("String fR'' ", () => {
+        const lex = new PythonCoreTokenizer("fR''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("fR''");
+    });
+    test("String FR'' ", () => {
+        const lex = new PythonCoreTokenizer("FR''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("FR''");
+    });
+    test("String rf'' ", () => {
+        const lex = new PythonCoreTokenizer("rf''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("rf''");
+    });
+    test("String Rf'' ", () => {
+        const lex = new PythonCoreTokenizer("Rf''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("Rf''");
+    });
+    test("String rF'' ", () => {
+        const lex = new PythonCoreTokenizer("rF''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("rF''");
+    });
+    test("String RF'' ", () => {
+        const lex = new PythonCoreTokenizer("RF''");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.String);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(4);
+        expect(node.getContent()).toEqual("RF''");
+    });
 });
