@@ -20,6 +20,7 @@ class PythonCoreTokenizer {
     private tokenStart: number; // Start of current token beeing analyzed by lexer
     private ch: string; // Current character to be analuzed in lexer.
     private parensStack: TokenKind[];
+    private atBOL: boolean;
 
     constructor(private SourceCode: string) {
 
@@ -67,6 +68,7 @@ class PythonCoreTokenizer {
         this.tokenStart = 0;
         this.ch = this.SourceCode[this.pos++];
         this.parensStack = [];
+        this.atBOL = true;
     }
 
     private getChar() : string {
@@ -451,6 +453,18 @@ class PythonCoreTokenizer {
         }
 
         /* Handle newline - Token or Trivia */
+        if (this.ch === "\r" || this.ch === "\n") {
+            this.atBOL = true;
+            if (this.ch === "\r") {
+                this.ch = this.getChar();
+            }
+            if (this.ch === "\n") {
+                this.ch = this.getChar();
+            }
+
+            // Check for trivia or token later.
+            return new Token(this.tokenStart, this.pos, TokenKind.Newline, []);
+        }
 
         /* Period or start of Number */
         if (this.ch === ".") {    

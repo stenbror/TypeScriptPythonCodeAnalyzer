@@ -767,4 +767,25 @@ describe("PythonCore Tokenizer - Special tokens", () => {
         expect(node.getStartPosition()).toEqual(0);
         expect(node.getEndPosition()).toEqual(1);
     });
+    test("Newline '\\r' ", () => {
+        const lex = new PythonCoreTokenizer("\r");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Newline);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(1);
+    });
+    test("Newline '\\n' ", () => {
+        const lex = new PythonCoreTokenizer("\n");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Newline);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(1);
+    });
+    test("Newline '\\r\\n' ", () => {
+        const lex = new PythonCoreTokenizer("\r\n");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.Newline);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(2);
+    });
 });
