@@ -758,3 +758,13 @@ describe("PythonCore Tokenizer - TypeComment or Comment", () => {
         expect(node.getContent()).toEqual("# type: int => int");
     });
 });
+
+describe("PythonCore Tokenizer - Special tokens", () => {
+    test("End of file", () => {
+        const lex = new PythonCoreTokenizer("\0");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.EOF);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(1);
+    });
+});

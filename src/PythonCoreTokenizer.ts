@@ -409,7 +409,10 @@ class PythonCoreTokenizer {
             throw new LexicalErrorException(this.pos, "Implement comment as a trivia!");
         }
 
-
+        if (this.ch === "\0") {
+            // Handle valid EOF later!
+            return new Token(this.tokenStart, this.pos, TokenKind.EOF, []);
+        }
 
         /* Check for reserved keyword or name literal or start of prefix for string */
         if (this.isStartChar()) {
