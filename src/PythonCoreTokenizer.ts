@@ -384,334 +384,367 @@ class PythonCoreTokenizer {
 
     public advance() : Token {
         this.tokenStart = this.pos - 1;
+        const lock = true;
+        let isBlankLine = false;
+
+        nextLine: while (lock) {
+
+            isBlankLine = false;
 
 
-        /* Handle Whitespace */
-        while (this.ch === " " || this.ch === "\t" || this.ch === "\v") {
-            // Create Trivia later here!
-            this.ch = this.getChar();
-        }
-        this.tokenStart = this.pos - 1;
+            again:  while (lock) {
 
-        /* Handle comment or typecomment */
-        if (this.ch === "#") {
-            this.ch = this.getChar();
-            while (this.ch !== "\r" && this.ch !== "\n" && this.ch !== "\0") {
-                this.ch = this.getChar();
-            }
-
-            let sr = this.SourceCode.substring(this.tokenStart, this.pos);
-
-            // Handle newline and add them as trivia to typecomment or trivia list.
-
-            if (sr.startsWith("# type: ")) {
-                return new TypeComment(this.tokenStart, this.pos, [], sr);
-            }
-
-            throw new LexicalErrorException(this.pos, "Implement comment as a trivia!");
-        }
-
-        if (this.ch === "\0") {
-            // Handle valid EOF later!
-            return new Token(this.tokenStart, this.pos, TokenKind.EOF, []);
-        }
-
-        /* Check for reserved keyword or name literal or start of prefix for string */
-        if (this.isStartChar()) {
-            /* Check for valid prefix to strings first */
-            this.tokenStart = this.pos - 1;
-            let saw_b = false;
-            let saw_u = false;
-            let saw_f = false;
-            let saw_r = false;
-            let lock = true;
-            while (lock) {
-                if (!(saw_b || saw_u || saw_f) && (this.ch === "b" || this.ch === "B")) saw_b = true;
-                else if (!(saw_b || saw_u || saw_f) && (this.ch === "u" || this.ch === "U")) saw_u = true;
-                else if (!(saw_r || saw_u) && (this.ch === "r" || this.ch === "R")) saw_r = true;
-                else if (!(saw_f || saw_b || saw_u) && (this.ch === "f" || this.ch === "F")) saw_f = true;
-                else {
-                    lock = false;
-                    break;
-                }
-                this.ch = this.getChar();
-                if (this.ch === "\"" || this.ch === "'") return this.handleString();
-            }
-            /* Reset to start of token again */
-            this.pos = this.tokenStart;
-            this.ch = this.getChar();
-
-            const kind = this.indentifierOrReservedKeyword();
-            if (kind !== TokenKind.Empty) {
-                if (kind === TokenKind.Name) {
-                    return new NameLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
-                }
-                else {
-                    return new Token(this.tokenStart, this.pos, kind, []);
-                }
-            }
-        }
-
-        /* Handle newline - Token or Trivia */
-        if (this.ch === "\r" || this.ch === "\n") {
-            this.atBOL = true;
-            if (this.ch === "\r") {
-                this.ch = this.getChar();
-            }
-            if (this.ch === "\n") {
-                this.ch = this.getChar();
-            }
-
-            // Check for trivia or token later.
-            return new Token(this.tokenStart, this.pos, TokenKind.Newline, []);
-        }
-
-        /* Period or start of Number */
-        if (this.ch === ".") {    
-            this.ch = this.getChar();
-            if (this.isDigit()) {
-                this.pos--;
-                this.ch = ".";
-            }
-            if (this.ch === ".") {
-                this.ch = this.getChar();
-                if (this.ch === ".") {
+                /* Handle Whitespace */
+                while (this.ch === " " || this.ch === "\t" || this.ch === "\v") {
+                    // Create Trivia later here!
                     this.ch = this.getChar();
-                    return new Token(this.tokenStart, this.pos, TokenKind.Py_Elipsis, []);
                 }
-                this.pos--;
-            }
-            else {
-                return new Token(this.tokenStart, this.pos, TokenKind.Py_Dot, []);
-            }
-        }
+                this.tokenStart = this.pos - 1;
 
-        /* Handle Numbers */
-        if (this.isDigit() || this.ch === ".") {
-            if (this.ch === "0") {
-                this.ch = this.getChar();
-                if (this.ch === "x" || this.ch === "X") {
+                /* Handle comment or typecomment */
+                if (this.ch === "#") {
                     this.ch = this.getChar();
-                    do {
-                        if (this.ch === "_") {
-                            this.ch = this.getChar();
-                        }
-                        if (!this.isHexDigit()) {
-                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in hex number!`);
-                        }
-                        do {
-                            this.ch = this.getChar();
-                        } while (this.isHexDigit());
-                    } while (this.ch === "_");
+                    while (this.ch !== "\r" && this.ch !== "\n" && this.ch !== "\0") {
+                        this.ch = this.getChar();
+                    }
+
+                    const sr = this.SourceCode.substring(this.tokenStart, this.pos);
+
+                    // Handle newline and add them as trivia to typecomment or trivia list.
+
+                    if (sr.startsWith("# type: ")) {
+                        return new TypeComment(this.tokenStart, this.pos, [], sr);
+                    }
+
+                    throw new LexicalErrorException(this.pos, "Implement comment as a trivia!");
                 }
-                else if (this.ch === "o" || this.ch === "O") {
+
+                if (this.ch === "\0") {
+                    // Handle valid EOF later!
+                    return new Token(this.tokenStart, this.pos, TokenKind.EOF, []);
+                }
+
+                /* Check for reserved keyword or name literal or start of prefix for string */
+                if (this.isStartChar()) {
+                    /* Check for valid prefix to strings first */
+                    this.tokenStart = this.pos - 1;
+                    let saw_b = false;
+                    let saw_u = false;
+                    let saw_f = false;
+                    let saw_r = false;
+                    let lock = true;
+                    while (lock) {
+                        if (!(saw_b || saw_u || saw_f) && (this.ch === "b" || this.ch === "B")) saw_b = true;
+                        else if (!(saw_b || saw_u || saw_f) && (this.ch === "u" || this.ch === "U")) saw_u = true;
+                        else if (!(saw_r || saw_u) && (this.ch === "r" || this.ch === "R")) saw_r = true;
+                        else if (!(saw_f || saw_b || saw_u) && (this.ch === "f" || this.ch === "F")) saw_f = true;
+                        else {
+                            lock = false;
+                            break;
+                        }
+                        this.ch = this.getChar();
+                        if (this.ch === "\"" || this.ch === "'") return this.handleString();
+                    }
+                    /* Reset to start of token again */
+                    this.pos = this.tokenStart;
                     this.ch = this.getChar();
-                    do {
-                        if (this.ch === "_") {
-                            this.ch = this.getChar();
+
+                    const kind = this.indentifierOrReservedKeyword();
+                    if (kind !== TokenKind.Empty) {
+                        if (kind === TokenKind.Name) {
+                            return new NameLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
                         }
-                        if (!this.isOctetDigit()) {
-                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in octet number!`);
+                        else {
+                            return new Token(this.tokenStart, this.pos, kind, []);
                         }
-                        do {
-                            this.ch = this.getChar();
-                        } while (this.isOctetDigit());
-                    } while (this.ch === "_");
+                    }
+                }
+
+                /* Handle newline - Token or Trivia */
+                if (this.ch === "\r" || this.ch === "\n") {
+                    this.atBOL = true;
+                    if (this.ch === "\r") {
+                        this.ch = this.getChar();
+                    }
+                    if (this.ch === "\n") {
+                        this.ch = this.getChar();
+                    }
+
+                    if (isBlankLine) continue nextLine; 
+
+                    // Check for trivia or token later.
+                    return new Token(this.tokenStart, this.pos, TokenKind.Newline, []);
+                }
+
+                /* Period or start of Number */
+                if (this.ch === ".") {    
+                    this.ch = this.getChar();
                     if (this.isDigit()) {
-                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in octet number!`);
+                        this.pos--;
+                        this.ch = ".";
                     }
-                }
-                else if (this.ch === "b" || this.ch === "B") {
-                    this.ch = this.getChar();
-                    do {
-                        if (this.ch === "_") {
-                            this.ch = this.getChar();
-                        }
-                        if (!this.isBinaryDigit()) {
-                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
-                        }
-                        do {
-                            this.ch = this.getChar();
-                        } while (this.isBinaryDigit());
-                    } while (this.ch === "_");
-                    if (this.isDigit()) {
-                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
-                    }
-                }
-                else {
-                    let nonZero = false;
-
-                    if (this.ch !== ".") {
-
-                        let lock = true;
-                        while (lock) {
-                            do {
-                                if (this.isDigit() && this.ch != "0") nonZero = true;
-                                this.ch = this.getChar();
-                            } while (this.isDigit());
-                            if (this.ch != "_") {
-                                lock = false;
-                                break;
-                            }
-                            this.ch = this.getChar();
-                            if (!this.isDigit()) {
-                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                            }
-                        }
-                    }
-
                     if (this.ch === ".") {
                         this.ch = this.getChar();
-                        let lock = true;
-                        while (lock) {
-                            while (this.isDigit()) {
-                                this.ch = this.getChar();
-                            }
-                            if (this.ch != "_") {
-                                lock = false;
-                                break;
-                            }
+                        if (this.ch === ".") {
                             this.ch = this.getChar();
-                            if (!this.isDigit()) {
-                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                            }
+                            return new Token(this.tokenStart, this.pos, TokenKind.Py_Elipsis, []);
                         }
+                        this.pos--;
                     }
-
-                    if (this.ch === "e" || this.ch === "E") {
-                        this.ch = this.getChar();
-                        if (this.ch === "+" || this.ch === "-") {
-                            this.ch = this.getChar();
-                            if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                        }
-                        else if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-
-                        let lock = true;
-                        while (lock) {
-                            while (this.isDigit()) {
-                                this.ch = this.getChar();
-                            }
-                            if (this.ch != "_") {
-                                lock = false;
-                                break;
-                            }
-                            this.ch = this.getChar();
-                            if (!this.isDigit()) {
-                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                            }
-                        }
-                    }
-
-                    if (this.ch === "j" || this.ch === "J") {
-                        this.ch = this.getChar();
-                    }
-
-
-                    if (nonZero) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number starting with '0' !`);
-                }
-            } 
-            else {  /* Decimal */
-                if (this.ch !== ".") {
-
-                    let lock = true;
-                    while (lock) {
-                        do {
-                            this.ch = this.getChar();
-                        } while (this.isDigit());
-                        if (this.ch != "_") {
-                            lock = false;
-                            break;
-                        }
-                        this.ch = this.getChar();
-                        if (!this.isDigit()) {
-                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                        }
+                    else {
+                        return new Token(this.tokenStart, this.pos, TokenKind.Py_Dot, []);
                     }
                 }
 
-                if (this.ch === ".") {
-                    this.ch = this.getChar();
-                    let lock = true;
-                    while (lock) {
-                        while (this.isDigit()) {
+                /* Handle Numbers */
+                if (this.isDigit() || this.ch === ".") {
+                    if (this.ch === "0") {
+                        this.ch = this.getChar();
+                        if (this.ch === "x" || this.ch === "X") {
                             this.ch = this.getChar();
+                            do {
+                                if (this.ch === "_") {
+                                    this.ch = this.getChar();
+                                }
+                                if (!this.isHexDigit()) {
+                                    throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in hex number!`);
+                                }
+                                do {
+                                    this.ch = this.getChar();
+                                } while (this.isHexDigit());
+                            } while (this.ch === "_");
                         }
-                        if (this.ch != "_") {
-                            lock = false;
-                            break;
-                        }
-                        this.ch = this.getChar();
-                        if (!this.isDigit()) {
-                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                        }
-                    }
-                }
-
-                if (this.ch === "e" || this.ch === "E") {
-                    this.ch = this.getChar();
-                    if (this.ch === "+" || this.ch === "-") {
-                        this.ch = this.getChar();
-                        if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                    }
-                    else if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-
-                    let lock = true;
-                    while (lock) {
-                        while (this.isDigit()) {
+                        else if (this.ch === "o" || this.ch === "O") {
                             this.ch = this.getChar();
+                            do {
+                                if (this.ch === "_") {
+                                    this.ch = this.getChar();
+                                }
+                                if (!this.isOctetDigit()) {
+                                    throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in octet number!`);
+                                }
+                                do {
+                                    this.ch = this.getChar();
+                                } while (this.isOctetDigit());
+                            } while (this.ch === "_");
+                            if (this.isDigit()) {
+                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in octet number!`);
+                            }
                         }
-                        if (this.ch != "_") {
-                            lock = false;
-                            break;
+                        else if (this.ch === "b" || this.ch === "B") {
+                            this.ch = this.getChar();
+                            do {
+                                if (this.ch === "_") {
+                                    this.ch = this.getChar();
+                                }
+                                if (!this.isBinaryDigit()) {
+                                    throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
+                                }
+                                do {
+                                    this.ch = this.getChar();
+                                } while (this.isBinaryDigit());
+                            } while (this.ch === "_");
+                            if (this.isDigit()) {
+                                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in binary number!`);
+                            }
                         }
-                        this.ch = this.getChar();
-                        if (!this.isDigit()) {
-                            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
-                        }
-                    }
-                }
-
-                if (this.ch === "j" || this.ch === "J") {
-                    this.ch = this.getChar();
-                }
-
-            }
-            return new NumberLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
-        }
-
-        /* Handle string */
-        if (this.ch === "'" || this.ch === "\"") return this.handleString();
-
-        /* Operator or delimiters */
-        {
-            const kind = this.operatorOrDelimiter();
-            if (kind !== TokenKind.Empty) {
-                switch (kind) {
-                    case TokenKind.Py_LeftParen:
-                    case TokenKind.Py_LeftBracket:
-                    case TokenKind.Py_LeftCurly:
-                        this.parensStack.push(kind);
-                        break;
-                    case TokenKind.Py_RightParen:
-                    case TokenKind.Py_RightBracket:
-                    case TokenKind.Py_RightCurly: {
-                        const openParens = this.parensStack.length > 0 ? this.parensStack.pop() : TokenKind.Empty;
-                        if ( (openParens === TokenKind.Py_LeftParen && kind === TokenKind.Py_RightParen) ||
-                             (openParens === TokenKind.Py_LeftBracket && kind === TokenKind.Py_RightBracket) ||
-                             (openParens === TokenKind.Py_LeftCurly && kind === TokenKind.Py_RightCurly) ) {
-                                break;
-                            } 
                         else {
-                            throw new LexicalErrorException(this.pos, "No matching parenthezis found!");
+                            let nonZero = false;
+
+                            if (this.ch !== ".") {
+
+                                let lock = true;
+                                while (lock) {
+                                    do {
+                                        if (this.isDigit() && this.ch != "0") nonZero = true;
+                                        this.ch = this.getChar();
+                                    } while (this.isDigit());
+                                    if (this.ch != "_") {
+                                        lock = false;
+                                        break;
+                                    }
+                                    this.ch = this.getChar();
+                                    if (!this.isDigit()) {
+                                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                    }
+                                }
+                            }
+
+                            if (this.ch === ".") {
+                                this.ch = this.getChar();
+                                let lock = true;
+                                while (lock) {
+                                    while (this.isDigit()) {
+                                        this.ch = this.getChar();
+                                    }
+                                    if (this.ch != "_") {
+                                        lock = false;
+                                        break;
+                                    }
+                                    this.ch = this.getChar();
+                                    if (!this.isDigit()) {
+                                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                    }
+                                }
+                            }
+
+                            if (this.ch === "e" || this.ch === "E") {
+                                this.ch = this.getChar();
+                                if (this.ch === "+" || this.ch === "-") {
+                                    this.ch = this.getChar();
+                                    if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                }
+                                else if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+
+                                let lock = true;
+                                while (lock) {
+                                    while (this.isDigit()) {
+                                        this.ch = this.getChar();
+                                    }
+                                    if (this.ch != "_") {
+                                        lock = false;
+                                        break;
+                                    }
+                                    this.ch = this.getChar();
+                                    if (!this.isDigit()) {
+                                        throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                    }
+                                }
+                            }
+
+                            if (this.ch === "j" || this.ch === "J") {
+                                this.ch = this.getChar();
+                            }
+
+
+                            if (nonZero) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number starting with '0' !`);
+                        }
+                    } 
+                    else {  /* Decimal */
+                        if (this.ch !== ".") {
+
+                            let lock = true;
+                            while (lock) {
+                                do {
+                                    this.ch = this.getChar();
+                                } while (this.isDigit());
+                                if (this.ch != "_") {
+                                    lock = false;
+                                    break;
+                                }
+                                this.ch = this.getChar();
+                                if (!this.isDigit()) {
+                                    throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                }
+                            }
+                        }
+
+                        if (this.ch === ".") {
+                            this.ch = this.getChar();
+                            let lock = true;
+                            while (lock) {
+                                while (this.isDigit()) {
+                                    this.ch = this.getChar();
+                                }
+                                if (this.ch != "_") {
+                                    lock = false;
+                                    break;
+                                }
+                                this.ch = this.getChar();
+                                if (!this.isDigit()) {
+                                    throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                }
+                            }
+                        }
+
+                        if (this.ch === "e" || this.ch === "E") {
+                            this.ch = this.getChar();
+                            if (this.ch === "+" || this.ch === "-") {
+                                this.ch = this.getChar();
+                                if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                            }
+                            else if (!this.isDigit()) throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+
+                            let lock = true;
+                            while (lock) {
+                                while (this.isDigit()) {
+                                    this.ch = this.getChar();
+                                }
+                                if (this.ch != "_") {
+                                    lock = false;
+                                    break;
+                                }
+                                this.ch = this.getChar();
+                                if (!this.isDigit()) {
+                                    throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in number!`);
+                                }
+                            }
+                        }
+
+                        if (this.ch === "j" || this.ch === "J") {
+                            this.ch = this.getChar();
+                        }
+
+                    }
+                    return new NumberLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+                }
+
+                /* Handle string */
+                if (this.ch === "'" || this.ch === "\"") return this.handleString();
+
+                /* Handle line continuation */
+                if (this.ch === "\\") {
+                    this.ch = this.getChar();
+                    if (this.ch === "\r") {
+                        this.ch = this.getChar();
+                        if (this.ch === "\n") {
+                            this.ch = this.getChar();
                         }
                     }
-                    default:
-                        break;
-                }
-                return new Token(this.tokenStart, this.pos, kind, []);
-            }
-        }
+                    else if (this.ch === "\n") {
+                        this.ch = this.getChar();
+                    }
+                    else {
+                        throw new LexicalErrorException(this.pos, "Expecting newline after '\\' line continuation!");
+                    }
 
+                    continue again;
+                }
+
+                /* Operator or delimiters */
+                {
+                    const kind = this.operatorOrDelimiter();
+                    if (kind !== TokenKind.Empty) {
+                        switch (kind) {
+                            case TokenKind.Py_LeftParen:
+                            case TokenKind.Py_LeftBracket:
+                            case TokenKind.Py_LeftCurly:
+                                this.parensStack.push(kind);
+                                break;
+                            case TokenKind.Py_RightParen:
+                            case TokenKind.Py_RightBracket:
+                            case TokenKind.Py_RightCurly: {
+                                const openParens = this.parensStack.length > 0 ? this.parensStack.pop() : TokenKind.Empty;
+                                if ( (openParens === TokenKind.Py_LeftParen && kind === TokenKind.Py_RightParen) ||
+                                    (openParens === TokenKind.Py_LeftBracket && kind === TokenKind.Py_RightBracket) ||
+                                    (openParens === TokenKind.Py_LeftCurly && kind === TokenKind.Py_RightCurly) ) {
+                                        break;
+                                    } 
+                                else {
+                                    throw new LexicalErrorException(this.pos, "No matching parenthezis found!");
+                                }
+                            }
+                            default:
+                                break;
+                        }
+                        return new Token(this.tokenStart, this.pos, kind, []);
+                    }
+                }
+
+                throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in sourcecode!`);
+            }
+            throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in sourcecode!`);
+        }
         throw new LexicalErrorException(this.pos, `Illegal character '${this.ch}' in sourcecode!`);
     }
 }
