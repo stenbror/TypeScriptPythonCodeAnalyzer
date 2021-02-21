@@ -747,3 +747,14 @@ describe("PythonCore Tokenizer - String", () => {
         expect(node.getContent()).toEqual("RF''");
     });
 });
+
+describe("PythonCore Tokenizer - TypeComment or Comment", () => {
+    test("TypeComment ", () => {
+        const lex = new PythonCoreTokenizer("# type: int => int");
+        const node = <StringLiteral> lex.advance();
+        expect(node.getKind()).toEqual(TokenKind.TypeComment);
+        expect(node.getStartPosition()).toEqual(0);
+        expect(node.getEndPosition()).toEqual(18);
+        expect(node.getContent()).toEqual("# type: int => int");
+    });
+});

@@ -4,7 +4,7 @@
 // Implements Python grammar 3.9 in Typescript for code analyzing purposes of Python code.
 // Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
 
-import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral } from "./Token";
+import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral, TypeComment } from "./Token";
 
 export class LexicalErrorException extends Error {
     constructor(private Position: number, private text: string) {
@@ -382,6 +382,32 @@ class PythonCoreTokenizer {
 
     public advance() : Token {
         this.tokenStart = this.pos - 1;
+
+
+        /* Handle Whitespace */
+        while (this.ch === " " || this.ch === "\t" || this.ch === "\v") {
+            // Create Trivia later here!
+            this.ch = this.getChar();
+        }
+        this.tokenStart = this.pos - 1;
+
+        /* Handle comment or typecomment */
+        if (this.ch === "#") {
+            this.ch = this.getChar();
+            while (this.ch !== "\r" && this.ch !== "\n" && this.ch !== "\0") {
+                this.ch = this.getChar();
+            }
+
+            let sr = this.SourceCode.substring(this.tokenStart, this.pos);
+
+            // Handle newline and add them as trivia to typecomment or trivia list.
+
+            if (sr.startsWith("# type: ")) {
+                return new TypeComment(this.tokenStart, this.pos, [], sr);
+            }
+
+            throw new LexicalErrorException(this.pos, "Implement comment as a trivia!");
+        }
 
 
 

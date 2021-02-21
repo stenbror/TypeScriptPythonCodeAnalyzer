@@ -101,4 +101,8 @@ export class TypeComment extends Token {
         super(startPos, endPos, TokenKind.TypeComment, trivias);
         this.comment = comment;
     }
+
+    getContent() : string {
+        return this.comment;
+    }
 }
