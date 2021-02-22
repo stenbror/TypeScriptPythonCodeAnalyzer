@@ -19,11 +19,12 @@ class PythonCoreTokenizer {
     private pos: number;    // Index into source code buffer
     private tokenStart: number; // Start of current token beeing analyzed by lexer
     private ch: string; // Current character to be analuzed in lexer.
-    private parensStack: TokenKind[];
-    private atBOL: boolean;
-    private indentStack: number[];
-    private pending: number;
-    private tabSize: number;
+    private parensStack: TokenKind[]; // Stack for matching parenthesis.
+    private atBOL: boolean; // Sets flag for handling indent calculations
+    private indentStack: number[]; // Stack with all indent levels in source code for matching indent with dedent.
+    private pending: number; // Outstanding indent or dendent(s) tokens.
+    private tabSize: number; // Number of spaces in a tab character
+    private isInteractive: boolean; // Sets interactive mode.
 
     constructor(private SourceCode: string) {
 
@@ -76,6 +77,7 @@ class PythonCoreTokenizer {
         this.indentStack = [];
         this.indentStack.push(0);
         this.tabSize = 8;
+        this.isInteractive = false;
     }
 
     private getChar() : string {
@@ -397,10 +399,10 @@ class PythonCoreTokenizer {
         nextLine: while (lock) {
 
             isBlankLine = false;
+            let col = 0;
 
             if (this.atBOL) {
                 this.atBOL = false;
-                let col = 0;
                 while (this.ch === " " || this.ch === "\t" || this.ch === "\v") {
                     if (this.ch === " ") {
                         col++;
@@ -413,6 +415,18 @@ class PythonCoreTokenizer {
                     }
                     this.ch = this.getChar();
                 }
+            
+                if (this.ch === "#" || this.ch === "\r" || this.ch ==="\n" || this.ch === "\\") {
+                    if (col === 0 && (this.ch === "\r" || this.ch === "\n") && this.isInteractive) {
+                        isBlankLine = false;
+                    }
+                    else if (this.isInteractive) {
+                        col = 0;
+                        isBlankLine = false;
+                    }
+                    else isBlankLine = true;
+                }
+
             }
 
 
