@@ -21,6 +21,8 @@ class PythonCoreTokenizer {
     private ch: string; // Current character to be analuzed in lexer.
     private parensStack: TokenKind[];
     private atBOL: boolean;
+    private indentStack: number[];
+    private pending: number;
 
     constructor(private SourceCode: string) {
 
@@ -69,6 +71,9 @@ class PythonCoreTokenizer {
         this.ch = this.SourceCode[this.pos++];
         this.parensStack = [];
         this.atBOL = true;
+        this.pending = 0;
+        this.indentStack = [];
+        this.indentStack.push(0);
     }
 
     private getChar() : string {
