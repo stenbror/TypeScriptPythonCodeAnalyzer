@@ -444,6 +444,19 @@ class PythonCoreTokenizer {
                 }
             }
 
+            this.tokenStart = this.pos - 1;
+
+            /* Handle pending indent ot dedent(s) */
+            if (this.pending !== 0) {
+                if (this.pending < 0) {
+                    this.pending++;
+                    return new Token(this.tokenStart, this.pos, TokenKind.Dedent, []);
+                }
+                else {
+                    this.pending--;
+                    return new Token(this.tokenStart, this.pos, TokenKind.Indent, []);
+                }
+            }
 
             again:  while (lock) {
 
