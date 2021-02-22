@@ -427,6 +427,21 @@ class PythonCoreTokenizer {
                     else isBlankLine = true;
                 }
 
+                if (!isBlankLine && this.parensStack.length === 0) {
+                    if (col > this.indentStack[this.indentStack.length - 1]) {
+                        this.indentStack.push(col);
+                        this.pending++;
+                    }
+                    else if (col < this.indentStack[this.indentStack.length - 1]) {
+                        while (this.indentStack.length > 1 && col < this.indentStack[this.indentStack.length - 1]) {
+                            this.pending--;
+                            this.indentStack.pop();
+                        }
+                        if (col !== this.indentStack[this.indentStack.length - 1]) {
+                            throw new LexicalErrorException(this.pos, "Inconsistant indentation level!");
+                        }
+                    }
+                }
             }
 
 
