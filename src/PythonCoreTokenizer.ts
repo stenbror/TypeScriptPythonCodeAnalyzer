@@ -23,6 +23,7 @@ class PythonCoreTokenizer {
     private atBOL: boolean;
     private indentStack: number[];
     private pending: number;
+    private tabSize: number;
 
     constructor(private SourceCode: string) {
 
@@ -74,6 +75,7 @@ class PythonCoreTokenizer {
         this.pending = 0;
         this.indentStack = [];
         this.indentStack.push(0);
+        this.tabSize = 8;
     }
 
     private getChar() : string {
@@ -395,6 +397,23 @@ class PythonCoreTokenizer {
         nextLine: while (lock) {
 
             isBlankLine = false;
+
+            if (this.atBOL) {
+                this.atBOL = false;
+                let col = 0;
+                while (this.ch === " " || this.ch === "\t" || this.ch === "\v") {
+                    if (this.ch === " ") {
+                        col++;
+                    }
+                    else if (this.ch === "\t") {
+                        col = (col / this.tabSize + 1) * this.tabSize;
+                    }
+                    else {
+                        col = 0;
+                    }
+                    this.ch = this.getChar();
+                }
+            }
 
 
             again:  while (lock) {
