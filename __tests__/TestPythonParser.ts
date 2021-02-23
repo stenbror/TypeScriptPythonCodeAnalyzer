@@ -17,23 +17,31 @@ describe("PythonCoreParser - Expression rules", () => {
         const parser = new PythonCoreParser(lex);
         const root = parser.parseAtom();
         expect(root).toBeInstanceOf(ASTAtomFalseNode);
+        expect(root.getStart()).toBe(0);
+        expect(root.getEnd()).toBe(4);
     });
     test("Atom literal 'None'", () => {
         const lex = new PythonCoreTokenizer("None");
         const parser = new PythonCoreParser(lex);
         const root = parser.parseAtom();
         expect(root).toBeInstanceOf(ASTAtomNoneNode);
+        expect(root.getStart()).toBe(0);
+        expect(root.getEnd()).toBe(3);
     });
     test("Atom literal 'True'", () => {
         const lex = new PythonCoreTokenizer("True");
         const parser = new PythonCoreParser(lex);
         const root = parser.parseAtom();
         expect(root).toBeInstanceOf(ASTAtomTrueNode);
+        expect(root.getStart()).toBe(0);
+        expect(root.getEnd()).toBe(3);
     });
     test("Atom literal '...'", () => {
         const lex = new PythonCoreTokenizer("...");
         const parser = new PythonCoreParser(lex);
         const root = parser.parseAtom();
         expect(root).toBeInstanceOf(ASTAtomElipsisNode);
+        expect(root.getStart()).toBe(0);
+        expect(root.getEnd()).toBe(2);
     });
 });
