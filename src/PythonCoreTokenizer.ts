@@ -485,7 +485,7 @@ class PythonCoreTokenizer {
                         return new TypeComment(this.tokenStart, this.pos, [], sr);
                     }
 
-                    throw new LexicalErrorException(this.pos, "Implement comment as a trivia!");
+                    this.triviaStack.push( new Trivia(this.tokenStart, this.pos, TriviaKind.Comment, sr) );
                 }
 
                 if (this.ch === "\0") {
@@ -541,7 +541,6 @@ class PythonCoreTokenizer {
 
                     if (isBlankLine) {
                         this.triviaStack.push( new Trivia(this.tokenStart, this.pos, TriviaKind.NewLine, this.SourceCode.substring(this.tokenStart, this.pos)) );
-                        isBlankLine = false;
                         continue nextLine;
                     } 
 
