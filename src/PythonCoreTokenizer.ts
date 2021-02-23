@@ -5,7 +5,7 @@
 // Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
 
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral, TypeComment } from "./Token";
-import { Trivia } from "./Trivia";
+import { Trivia, TriviaKind } from "./Trivia";
 
 export class LexicalErrorException extends Error {
     constructor(private Position: number, private text: string) {
@@ -763,14 +763,20 @@ class PythonCoreTokenizer {
 
                 /* Handle line continuation */
                 if (this.ch === "\\") {
+                    this.triviaStack.push( new Trivia(this.pos - 1, this.pos, TriviaKind.LineContinuation, "\\") );
                     this.ch = this.getChar();
                     if (this.ch === "\r") {
                         this.ch = this.getChar();
                         if (this.ch === "\n") {
+                            this.triviaStack.push( new Trivia(this.pos - 2, this.pos, TriviaKind.NewLine, "\r\n") );
                             this.ch = this.getChar();
+                        }
+                        else {
+                            this.triviaStack.push( new Trivia(this.pos - 1, this.pos, TriviaKind.NewLine, "\r") );
                         }
                     }
                     else if (this.ch === "\n") {
+                        this.triviaStack.push( new Trivia(this.pos - 1, this.pos, TriviaKind.NewLine, "\n") );
                         this.ch = this.getChar();
                     }
                     else {
