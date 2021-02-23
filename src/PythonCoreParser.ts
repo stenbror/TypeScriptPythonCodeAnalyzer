@@ -151,16 +151,16 @@ class PythonCoreParser {
     private lexer: PythonCoreTokenizer;
 
     constructor(lexer: PythonCoreTokenizer) {
-        this.curSymbol = new Token(-1, -1, TokenKind.Empty, []);
         this.flowLevel = 0;
         this.lexer = lexer;
+        this.curSymbol = this.lexer.advance();
     }
 
     private advance() : void {
         this.curSymbol = this.lexer.advance();
     }
 
-    private parseAtom() : ASTNode {
+    public parseAtom() : ASTNode {
         const startPos = this.curSymbol.getStartPosition();
         const op1 = this.curSymbol;
         switch (this.curSymbol.getKind())
@@ -281,10 +281,15 @@ class PythonCoreParser {
             }
             return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), op1, left, nodes);
         }
+        console.log(`Fuck: ${this.curSymbol.getKind()}`);
         const left = this.parseAtom();
+        
         const nodes : ASTNode[] = [];
-        while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
-            nodes.push( this.parseTrailer() );
+        if (this.curSymbol.getKind() === TokenKind.Py_Dot || this.curSymbol.getKind() === TokenKind.Py_LeftParen || this.curSymbol.getKind() === TokenKind.Py_LeftBracket) {
+            console.log(`${this.curSymbol.getKind()}`);
+            while (this.curSymbol.getKind() in [ TokenKind.Py_Dot, TokenKind.Py_LeftParen, TokenKind.Py_LeftBracket ]) {
+                nodes.push( this.parseTrailer() );
+            }
         }
         return new ASTAtomExprNode(startPos, this.curSymbol.getStartPosition(), new Token(-1, -1, TokenKind.Empty, []), left, nodes);
     }
@@ -1900,6 +1905,7 @@ class PythonCoreParser {
         const nodes: ASTNode[] = [];
         const newlines: Token[] = [];
         this.advance();
+        console.log(`=> ${this.curSymbol.getKind()}`);
         while (this.curSymbol.getKind() !== TokenKind.EOF) {
             if (this.curSymbol.getKind() === TokenKind.Newline) {
                 newlines.push( this.curSymbol );
