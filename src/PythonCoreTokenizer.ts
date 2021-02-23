@@ -389,7 +389,7 @@ class PythonCoreTokenizer {
             this.ch = this.getChar();
         }
 
-        return new StringLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+        return new StringLiteral(this.tokenStart, this.pos, this.triviaStack, this.SourceCode.substring(this.tokenStart, this.pos));
     }
 
     // Public: Next token from source code. Parser calls this everytime it needs next token from source code ////////////////////
@@ -398,6 +398,7 @@ class PythonCoreTokenizer {
         this.tokenStart = this.pos - 1;
         const lock = true;
         let isBlankLine = false;
+        this.triviaStack = [];
 
         nextLine: while (lock) {
 
@@ -453,11 +454,11 @@ class PythonCoreTokenizer {
             if (this.pending !== 0) {
                 if (this.pending < 0) {
                     this.pending++;
-                    return new Token(this.tokenStart, this.pos, TokenKind.Dedent, []);
+                    return new Token(this.tokenStart, this.pos, TokenKind.Dedent, this.triviaStack);
                 }
                 else {
                     this.pending--;
-                    return new Token(this.tokenStart, this.pos, TokenKind.Indent, []);
+                    return new Token(this.tokenStart, this.pos, TokenKind.Indent, this.triviaStack);
                 }
             }
 
@@ -482,7 +483,7 @@ class PythonCoreTokenizer {
                     // Handle newline and add them as trivia to typecomment or trivia list.
 
                     if (sr.startsWith("# type: ")) {
-                        return new TypeComment(this.tokenStart, this.pos, [], sr);
+                        return new TypeComment(this.tokenStart, this.pos, this.triviaStack, sr);
                     }
 
                     this.triviaStack.push( new Trivia(this.tokenStart, this.pos, TriviaKind.Comment, sr) );
@@ -490,7 +491,7 @@ class PythonCoreTokenizer {
 
                 if (this.ch === "\0") {
                     // Handle valid EOF later!
-                    return new Token(this.tokenStart, this.pos, TokenKind.EOF, []);
+                    return new Token(this.tokenStart, this.pos, TokenKind.EOF, this.triviaStack);
                 }
 
                 /* Check for reserved keyword or name literal or start of prefix for string */
@@ -521,10 +522,10 @@ class PythonCoreTokenizer {
                     const kind = this.indentifierOrReservedKeyword();
                     if (kind !== TokenKind.Empty) {
                         if (kind === TokenKind.Name) {
-                            return new NameLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+                            return new NameLiteral(this.tokenStart, this.pos, this.triviaStack, this.SourceCode.substring(this.tokenStart, this.pos));
                         }
                         else {
-                            return new Token(this.tokenStart, this.pos, kind, []);
+                            return new Token(this.tokenStart, this.pos, kind, this.triviaStack);
                         }
                     }
                 }
@@ -545,7 +546,7 @@ class PythonCoreTokenizer {
                     } 
 
                     // Check for trivia or token later.
-                    return new Token(this.tokenStart, this.pos, TokenKind.Newline, []);
+                    return new Token(this.tokenStart, this.pos, TokenKind.Newline, this.triviaStack);
                 }
 
                 /* Period or start of Number */
@@ -559,12 +560,12 @@ class PythonCoreTokenizer {
                         this.ch = this.getChar();
                         if (this.ch === ".") {
                             this.ch = this.getChar();
-                            return new Token(this.tokenStart, this.pos, TokenKind.Py_Elipsis, []);
+                            return new Token(this.tokenStart, this.pos, TokenKind.Py_Elipsis, this.triviaStack);
                         }
                         this.pos--;
                     }
                     else {
-                        return new Token(this.tokenStart, this.pos, TokenKind.Py_Dot, []);
+                        return new Token(this.tokenStart, this.pos, TokenKind.Py_Dot, this.triviaStack);
                     }
                 }
 
@@ -758,7 +759,7 @@ class PythonCoreTokenizer {
                         }
 
                     }
-                    return new NumberLiteral(this.tokenStart, this.pos, [], this.SourceCode.substring(this.tokenStart, this.pos));
+                    return new NumberLiteral(this.tokenStart, this.pos, this.triviaStack, this.SourceCode.substring(this.tokenStart, this.pos));
                 }
 
                 /* Handle string */
@@ -815,7 +816,7 @@ class PythonCoreTokenizer {
                             default:
                                 break;
                         }
-                        return new Token(this.tokenStart, this.pos, kind, []);
+                        return new Token(this.tokenStart, this.pos, kind, this.triviaStack);
                     }
                 }
 
