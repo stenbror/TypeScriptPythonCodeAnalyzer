@@ -1,19 +1,5 @@
 
-export enum TriviaKind {
-    Empty, WhiteSpace, NewLine, LineContinuation, Comment
-}
-
-export class Trivia {
-    private startPosition: number;
-    private endPosition: number;
-    private kind: TriviaKind;
-
-    constructor(startPos: number, endPos: number, kind: TriviaKind) {
-        this.startPosition = startPos;
-        this.endPosition = endPos;
-        this.kind = kind;
-    }
-}
+import { Trivia } from "./Trivia";
 
 export enum TokenKind {
     Empty, EOF, Newline, Indent, Dedent, Py_False, Py_None, Py_True, Py_And, Py_As, Py_Assert, 

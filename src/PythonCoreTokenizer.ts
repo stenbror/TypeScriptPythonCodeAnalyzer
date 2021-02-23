@@ -5,6 +5,7 @@
 // Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
 
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral, TypeComment } from "./Token";
+import { Trivia } from "./Trivia";
 
 export class LexicalErrorException extends Error {
     constructor(private Position: number, private text: string) {
@@ -25,6 +26,7 @@ class PythonCoreTokenizer {
     private pending: number; // Outstanding indent or dendent(s) tokens.
     private tabSize: number; // Number of spaces in a tab character
     private isInteractive: boolean; // Sets interactive mode.
+    private triviaStack: Trivia[];
 
     constructor(private SourceCode: string) {
 
@@ -78,6 +80,7 @@ class PythonCoreTokenizer {
         this.indentStack.push(0);
         this.tabSize = 8;
         this.isInteractive = false;
+        this.triviaStack = [];
     }
 
     private getChar() : string {
