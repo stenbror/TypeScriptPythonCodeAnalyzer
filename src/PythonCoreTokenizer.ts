@@ -539,7 +539,11 @@ class PythonCoreTokenizer {
                         this.ch = this.getChar();
                     }
 
-                    if (isBlankLine) continue nextLine; 
+                    if (isBlankLine) {
+                        this.triviaStack.push( new Trivia(this.tokenStart, this.pos, TriviaKind.NewLine, this.SourceCode.substring(this.tokenStart, this.pos)) );
+                        isBlankLine = false;
+                        continue nextLine;
+                    } 
 
                     // Check for trivia or token later.
                     return new Token(this.tokenStart, this.pos, TokenKind.Newline, []);
