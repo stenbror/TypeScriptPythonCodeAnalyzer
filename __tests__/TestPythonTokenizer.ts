@@ -1,4 +1,10 @@
 
+
+// PythonCoreTokenizer - UnitTests.
+// Written by Richard Magnor Stenbro. stenbror@hotmail.com
+// Implements Python grammar 3.9 in Typescript for code analyzing purposes of Python code.
+// Copyright (C) 2021 By Richard Magnor Stenbro. Free to use for any non profit purposes.
+
 import PythonCoreTokenizer from "../src/PythonCoreTokenizer";
 import { NameLiteral, NumberLiteral, StringLiteral, TokenKind } from "../src/Token";
 
