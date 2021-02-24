@@ -388,7 +388,7 @@ class PythonCoreTokenizer {
             }
             this.ch = this.getChar();
         }
-
+        
         return new StringLiteral(this.tokenStart, this.pos, this.triviaStack, this.SourceCode.substring(this.tokenStart, this.pos));
     }
 

@@ -15,7 +15,7 @@ import PythonCoreParser  from "../src/PythonCoreParser";
 import PythonCoreTokenizer  from "../src/PythonCoreTokenizer";
 import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral, TypeComment } from "../src//Token";
 
-describe("PythonCoreParser - Expression rules", () => {
+describe("PythonCoreParser - Expression Atom", () => {
     test("Atom literal 'False'", () => {
         const lex = new PythonCoreTokenizer("False");
         const parser = new PythonCoreParser(lex);
@@ -71,9 +71,22 @@ describe("PythonCoreParser - Expression rules", () => {
     test("Atom literal 'Hello, World'", () => {
         const lex = new PythonCoreTokenizer("'Hello, World'");
         const parser = new PythonCoreParser(lex);
-        const root = parser.parseAtom();
+        const root = <ASTAtomStringNode> parser.parseAtom();
+        const tokens = root.getTokens();
         expect(root).toBeInstanceOf(ASTAtomStringNode);
         expect(root.getStart()).toBe(0);
         expect(root.getEnd()).toBe(13);
+        expect(tokens[0].getContent()).toBe("'Hello, World'");
+    });
+    test("Atom literal 'Hello, World' 'Bye!'", () => {
+        const lex = new PythonCoreTokenizer("'Hello, World''Bye!'");
+        const parser = new PythonCoreParser(lex);
+        const root = <ASTAtomStringNode> parser.parseAtom();
+        const tokens = root.getTokens();
+        expect(root).toBeInstanceOf(ASTAtomStringNode);
+        expect(root.getStart()).toBe(0);
+        expect(root.getEnd()).toBe(19);
+        //expect(tokens[0].getContent()).toBe("'Hello, World'");
+        expect(tokens[1].getContent()).toBe("'Bye!'");
     });
 });
