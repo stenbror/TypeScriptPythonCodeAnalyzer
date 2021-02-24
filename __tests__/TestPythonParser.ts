@@ -13,6 +13,7 @@ import { ASTAtomStringNode } from "../src/ast/ASTAtomStringLiteralNode";
 import { ASTAtomTrueNode } from "../src/ast/ASTAtomTrueNode";
 import PythonCoreParser  from "../src/PythonCoreParser";
 import PythonCoreTokenizer  from "../src/PythonCoreTokenizer";
+import { Token, TokenKind, StringLiteral, NameLiteral, NumberLiteral, TypeComment } from "../src//Token";
 
 describe("PythonCoreParser - Expression rules", () => {
     test("Atom literal 'False'", () => {
@@ -50,10 +51,12 @@ describe("PythonCoreParser - Expression rules", () => {
     test("Atom literal 'TestVariable_1'", () => {
         const lex = new PythonCoreTokenizer("TestVariable_1");
         const parser = new PythonCoreParser(lex);
-        const root = parser.parseAtom();
+        const root = <ASTAtomNameNode> parser.parseAtom();
+        const name = root.getToken();
         expect(root).toBeInstanceOf(ASTAtomNameNode);
         expect(root.getStart()).toBe(0);
         expect(root.getEnd()).toBe(13);
+        expect(name.getContent()).toBe("TestVariable_1");
     });
     test("Atom literal '0.34J'", () => {
         const lex = new PythonCoreTokenizer("0.34J");
