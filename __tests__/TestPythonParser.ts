@@ -61,10 +61,12 @@ describe("PythonCoreParser - Expression rules", () => {
     test("Atom literal '0.34J'", () => {
         const lex = new PythonCoreTokenizer("0.34J");
         const parser = new PythonCoreParser(lex);
-        const root = parser.parseAtom();
+        const root = <ASTAtomNumberNode> parser.parseAtom();
+        const token = root.getToken();
         expect(root).toBeInstanceOf(ASTAtomNumberNode);
         expect(root.getStart()).toBe(0);
         expect(root.getEnd()).toBe(4);
+        expect(token.getContent()).toBe("0.34J");
     });
     test("Atom literal 'Hello, World'", () => {
         const lex = new PythonCoreTokenizer("'Hello, World'");

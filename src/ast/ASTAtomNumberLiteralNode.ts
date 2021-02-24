@@ -5,4 +5,8 @@ export class ASTAtomNumberNode extends ASTNode {
     constructor(startPos: number, endPos: number, private Number: NumberLiteral) {
         super(startPos, endPos);
     }
+
+    public getToken() : NumberLiteral {
+        return this.Number;
+    }
 }
